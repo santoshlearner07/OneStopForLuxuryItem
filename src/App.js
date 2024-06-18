@@ -1,24 +1,21 @@
-import logo from './logo.svg';
 import './App.css';
+import { Container } from 'react-bootstrap';
+import HeaderBar from "./fixedComponent/HeaderBar"
+import FooterBar from "./fixedComponent/FooterBar"
+import SearchBar from "./component/SearchBar"
+import Product from "./component/Product"
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Container className="App" fluid="xxl">
+      <HeaderBar />
+      <SearchBar />
+      <Product />
+      <FooterBar />
+    </Container>
   );
 }
 
