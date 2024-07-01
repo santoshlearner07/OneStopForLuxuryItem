@@ -5,7 +5,6 @@ import FooterBar from "./fixedComponent/FooterBar"
 import Product from "./component/Product"
 import { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
-import SearchBar from "./component/SearchBar"
 
 function App() {
 
@@ -38,7 +37,6 @@ function App() {
   return (
     <Container className="App" fluid="xxl">
       <HeaderBar />
-      <SearchBar/>
       <Routes>
         <Route path='/' element={
           <Product properties={properties} loading={loading} errMsg={error} />
