@@ -2,10 +2,10 @@ import './App.css';
 import { Container } from 'react-bootstrap';
 import HeaderBar from "./fixedComponent/HeaderBar"
 import FooterBar from "./fixedComponent/FooterBar"
-import SearchBar from "./component/SearchBar"
 import Product from "./component/Product"
 import { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
+import SearchBar from "./component/SearchBar"
 
 function App() {
 
@@ -16,14 +16,15 @@ function App() {
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        const response = await fetch('http://localhost:8888/api/properties');
+        const response = await fetch('http://localhost:8888/api/properties'); //remove fetch
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-        setProperties(data.properties);
+        // console.log(data)
+        setProperties(data);
         setLoading(false);
       } catch (error) {
         setError(error);
@@ -37,11 +38,11 @@ function App() {
   return (
     <Container className="App" fluid="xxl">
       <HeaderBar />
-      <SearchBar />
+      <SearchBar/>
       <Routes>
-    <Route path='/' element={
-      <Product properties={properties} loading={loading} errMsg={error} />
-    } />
+        <Route path='/' element={
+          <Product properties={properties} loading={loading} errMsg={error} />
+        } />
       </Routes>
       <FooterBar />
     </Container>
