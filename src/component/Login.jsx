@@ -5,7 +5,7 @@ function Login() {
   return (
     <Container>
       <Row>
-        <Col lg={5} md={4} sm={3}>
+        <Col className='text-center' lg={5} md={4} sm={3}  style={{marginLeft:"25%"}}>
           <Form>
             <Form.Group className="mb-3" controlId="formBasicEmail">
               <Form.Label>Email address</Form.Label>

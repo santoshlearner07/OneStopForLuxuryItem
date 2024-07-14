@@ -39,7 +39,7 @@ function App() {
   }, []);
 
   return (
-    <Container className="App" fluid="xxl">
+    <Container fluid="xxl">
       <HeaderBar />
       <Routes>
         <Route path='/' element={<Home />} />
