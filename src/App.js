@@ -5,6 +5,10 @@ import FooterBar from "./fixedComponent/FooterBar"
 import Product from "./component/Product"
 import { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
+import Home from './component/Home';
+import SingleProperty from './component/SingleProperty';
+import Login from './component/Login';
+import Register from './component/Register';
 
 function App() {
 
@@ -38,9 +42,13 @@ function App() {
     <Container className="App" fluid="xxl">
       <HeaderBar />
       <Routes>
-        <Route path='/' element={
+        <Route path='/' element={<Home />} />
+        <Route path='/login' element={<Login />} />
+        <Route path='/register' element={<Register />} />
+        <Route path='/properties' element={
           <Product properties={properties} loading={loading} errMsg={error} />
         } />
+        <Route path='/properties/:id' element={<SingleProperty />} />
       </Routes>
       <FooterBar />
     </Container>

@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { Button, Card, Col, Container, Form, ListGroup, Row } from 'react-bootstrap';
 import Carousel from 'react-bootstrap/Carousel';
+import { useNavigate } from 'react-router-dom';
 function Product(props) {
   const [show, hide] = useState(null)
-
+  const zoom = 13;
+  const navigate = useNavigate();
   const [filters, setFilters] = useState({
     address: "",
     bedrooms: [],
@@ -16,7 +18,6 @@ function Product(props) {
 
   const [filteredProperties, setFilteredProperties] = useState([]);
 
-  const zoom = 13;
   useEffect(() => {
     applyFilters();
   }, [props.properties, filters])
@@ -84,9 +85,12 @@ function Product(props) {
     if (type === 'moreThan5Bathrooms') {
       updatedFilters[type] = value;
     }
-    
     setFilters(updatedFilters);
   };
+
+  const displaySingleProperty = (property, index) => {
+    navigate(`/properties/${property}`)
+  }
 
   if (props.loading) {
     return <div>Loading...</div>;
@@ -99,7 +103,7 @@ function Product(props) {
 
   return (
     <Container>
-      <h1>One Stop For Luxury Item</h1>
+      <h1>Property</h1>
       {props.properties && <Row>
         <Col sm={3} style={{ backgroundColor: "aqua" }}>
           <Form.Group>
@@ -175,7 +179,7 @@ function Product(props) {
             {filteredProperties.map((item, index) => {
               return (
                 <Col key={index}>
-                  <Card>
+                  <Card onClick={() => displaySingleProperty(item.id, index)} >
                     <Carousel>
                       {item.propertyImages.images.map((image, imgIndex) => (
                         <Carousel.Item key={imgIndex}>
