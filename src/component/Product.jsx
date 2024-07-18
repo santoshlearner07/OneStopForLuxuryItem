@@ -37,6 +37,7 @@ function Product(props) {
 
     if (filters.bedrooms.length > 0) {
       filtered = filtered.filter(item => filters.bedrooms.includes(item.bedrooms))
+      console.log(filtered)
     }
 
     if (filters.bathrooms.length > 0) {
@@ -99,7 +100,7 @@ function Product(props) {
   if (props.errMsg) {
     return <div>Error: {props.errMsg.message}</div>;
   }
-  console.log(props.properties)
+  // console.log(props.properties)
 
   return (
     <Container>
