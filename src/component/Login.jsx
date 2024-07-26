@@ -43,14 +43,14 @@ function Login() {
   }
 
   return (
-    <Container style={{backgroundColor:"black"}} >
+    <Container style={{ backgroundColor: "black" }} >
       <Row>
         <Col lg={"3"} style={{ backgroundColor: "green" }} >
           <RegisterAdvantage />
         </Col>
         <Col lg={"6"} className='text-center' md={4} sm={3} style={{ backgroundColor: "red" }}>
           <Form>
-            <Form.Group className="mb-3" controlId="formBasicEmail">
+            <Form.Group className="mb-3" controlid="formBasicEmail">
               <Form.Label>Email address</Form.Label>
               <Form.Control type="email" placeholder="Enter email" name='email' value={userCheck.email} onChange={handleChange} />
               <Form.Text className="text-muted">
@@ -58,7 +58,7 @@ function Login() {
               </Form.Text>
             </Form.Group>
             <Form.Label>Password</Form.Label>
-            <InputGroup className="mb-3" controlId="formBasicPassword">
+            <InputGroup className="mb-3" controlid="formBasicPassword">
               <Form.Control type={show ? 'password' : 'text'} placeholder="Password" name='password' value={userCheck.password} onChange={handleChange} />
               <InputGroup.Text id="basic-addon1">
                 {" "}

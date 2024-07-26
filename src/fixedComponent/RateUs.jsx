@@ -26,11 +26,8 @@ function RateUs() {
             review: feedback.review
         };
 
-        console.log('Submitting Feedback:', userFeedback);
-
         axios.post(`${BaseApi}/submitfeedback`, userFeedback)
             .then((res) => {
-                console.log('Response:', res.data);
                 alert('Thank you for your feedback!');
                 setFeeback({ email: "", review: "" });
                 handleClose();
@@ -53,7 +50,7 @@ function RateUs() {
                 </Modal.Header>
                 <Modal.Body>
                     <Form>
-                        <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
+                        <Form.Group className="mb-3" controlid="exampleForm.ControlInput1">
                             <Form.Label>Email address</Form.Label>
                             <Form.Control
                                 type="email"
@@ -66,7 +63,7 @@ function RateUs() {
                         </Form.Group>
                         <Form.Group
                             className="mb-3"
-                            controlId="exampleForm.ControlTextarea1"
+                            controlid="exampleForm.ControlTextarea1"
                         >
                             <Form.Label>Give us a feedback</Form.Label>
                             <Form.Control as="textarea" rows={3} name='review' value={feedback.review} onChange={handleChange} />

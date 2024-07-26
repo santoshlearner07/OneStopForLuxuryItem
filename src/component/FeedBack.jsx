@@ -5,30 +5,28 @@ import axios from 'axios';
 function FeedBack() {
 
 
-    const [displayReview, setDisplayReview] = useState('');
+  const [displayReview, setDisplayReview] = useState('');
 
 
-    useEffect(() => {
-        axios.get(`${BaseApi}/submitfeedback`)
-          .then((res) => {
-            console.log(res.data)
-            setDisplayReview(res.data);
-          }).catch((error) => {
-            console.log(error)
-          })
-      }, [displayReview])
+  useEffect(() => {
+    axios.get(`${BaseApi}/submitfeedback`)
+      .then((res) => {
+        setDisplayReview(res.data);
+      }).catch((error) => {
+        console.log(error)
+      })
+  }, [displayReview])
 
   return (
     <>
-    <h1>Customer Feedback</h1>
-          <ul>
-
-            {displayReview && displayReview.map((item, index) => {
-              return (
-                <li style={{ backgroundColor: "white" }} ><h3>{item.review}</h3></li>
-              )
-            })}
-          </ul>
+      <h1>Customer Feedback</h1>
+      <ul>
+        {displayReview && displayReview.map((item, index) => {
+          return (
+            <li style={{ backgroundColor: "white" }} key={index}><h3>{item.review}</h3></li>
+          )
+        })}
+      </ul>
     </>
   )
 }
