@@ -1,8 +1,12 @@
 import React from 'react'
+import RateUs from './RateUs'
 
 function FooterBar() {
   return (
-    <div>FooterBar</div>
+    <div>
+      <h1>Footer Bar</h1>
+      <RateUs />
+    </div>
   )
 }
 

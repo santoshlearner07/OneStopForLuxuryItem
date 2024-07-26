@@ -1,13 +1,16 @@
 import axios from 'axios';
 import React, { useState } from 'react'
-import { Button, Col, Container, Form, Row } from 'react-bootstrap'
+import { Button, Col, Container, Form, InputGroup, Row } from 'react-bootstrap'
 import BaseApi from '../utils/BaseAPI';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import FeedBack from './FeedBack';
+import RegisterAdvantage from './RegisterAdvantage';
 
 function Register() {
   const [userDetail, setUserDetails] = useState({
     fName: "", lName: "", email: "", pass: "", confPass: "", address: "", gender: "", dateOfBirth: ""
   })
-
+  const [show, hide] = useState(true);
   const userRegister = (event) => {
     const { name, value } = event.target;
     setUserDetails((prevData) => ({ ...prevData, [name]: value }))
@@ -15,6 +18,10 @@ function Register() {
 
   const randomUniqueNumber = () => {
     return Math.floor(Math.random() * 100000) + 1;
+  }
+
+  const displayPassword = () => {
+    hide(!show)
   }
 
   const userRegistered = () => {
@@ -52,9 +59,11 @@ function Register() {
   }
 
   return (
-    <Container>
+    <Container style={{ backgroundColor: "black" }}  >
       <Row>
-        <Col lg={"3"} style={{ backgroundColor: "red" }} >Register now to </Col>
+        <Col lg={"3"} style={{ backgroundColor: "red" }} >
+          <RegisterAdvantage />
+        </Col>
         <Col lg={"6"} style={{ backgroundColor: "yellow" }} >
           <Form>
             <Row className="mb-3 mt-3">
@@ -73,16 +82,25 @@ function Register() {
               <Form.Control type="email" placeholder="Enter email" name='email' value={userDetail.email} onChange={userRegister} />
             </Form.Group>
             <Row className="mb-3">
-              <Form.Group as={Col} controlId="formGridPassword">
+              <Col>
                 <Form.Label>Password</Form.Label>
-                <Form.Control type="password" placeholder="Password" name='pass' value={userDetail.pass} onChange={userRegister} />
-              </Form.Group>
-              <Form.Group as={Col} controlId="formGridPassword">
-                <Form.Label>Confirm Password</Form.Label>
-                <Form.Control type="password" placeholder="Confirm Password" name='confPass' value={userDetail.confPass} onChange={userRegister} />
-              </Form.Group>
+                <InputGroup className="mb-3" controlId="formBasicPassword">
+                  <Form.Control type={show ? 'password' : 'text'} placeholder="Password" name='password' value={userDetail.password} onChange={userRegister} />
+                  <InputGroup.Text id="basic-addon1">
+                    {" "}
+                    <div onClick={() => displayPassword()} >
+                      {show ? <FaEyeSlash /> : <FaEye />}
+                    </div>
+                  </InputGroup.Text>
+                </InputGroup>
+              </Col>
+              <Col>
+                <Form.Group as={Col} controlId="formGridPassword">
+                  <Form.Label>Confirm Password</Form.Label>
+                  <Form.Control type="password" placeholder="Confirm Password" name='confPass' value={userDetail.confPass} onChange={userRegister} />
+                </Form.Group>
+              </Col>
             </Row>
-
             <Form.Group className="mb-3" controlId="formGridAddress1">
               <Form.Label>Address</Form.Label>
               <Form.Control placeholder="Enter your address" name='address' value={userDetail.address} onChange={userRegister} />
@@ -129,7 +147,9 @@ function Register() {
             </Button>
           </Form>
         </Col>
-        <Col lg={"3"} style={{ backgroundColor: "green" }} >About us</Col>
+        <Col lg={"3"} style={{ backgroundColor: "green" }} >
+          <FeedBack />
+        </Col>
       </Row>
     </Container>
   )

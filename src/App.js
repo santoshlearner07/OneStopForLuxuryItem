@@ -9,6 +9,7 @@ import Home from './component/Home';
 import SingleProperty from './component/SingleProperty';
 import Login from './component/Login';
 import Register from './component/Register';
+import AuthCheck from './auth/AuthCheck';
 
 function App() {
 
@@ -46,7 +47,7 @@ function App() {
         <Route path='/login' element={<Login />} />
         <Route path='/register' element={<Register />} />
         <Route path='/properties' element={
-          <Product properties={properties} loading={loading} errMsg={error} />
+           <Product properties={properties} loading={loading} errMsg={error} />
         } />
         <Route path='/properties/:id' element={<SingleProperty />} />
       </Routes>

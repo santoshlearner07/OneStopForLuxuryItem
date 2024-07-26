@@ -1,14 +1,18 @@
 import axios from 'axios';
 import React, { useState } from 'react'
-import { Button, Col, Container, Form, Row } from 'react-bootstrap'
+import { Button, Col, Container, Form, Row, InputGroup } from 'react-bootstrap'
 import BaseApi from '../utils/BaseAPI';
-
+import { useNavigate } from 'react-router-dom';
+import { FaEye } from "react-icons/fa";
+import { FaEyeSlash } from "react-icons/fa";
+import RegisterAdvantage from './RegisterAdvantage';
+import FeedBack from './FeedBack';
 function Login() {
-
+  const navigate = useNavigate();
   const [userCheck, setUserCheck] = useState({
     email: "", password: ""
   })
-
+  const [show, hide] = useState(true);
   const handleChange = (event) => {
     const { name, value } = event.target;
     setUserCheck((prevData) => ({ ...prevData, [name]: value }))
@@ -22,22 +26,29 @@ function Login() {
     }
     axios.post(`${BaseApi}/login`, userData)
       .then((res) => {
+        localStorage.setItem('token', res.data.accessToken)
         console.log(res)
-        console.log(userData)
+        navigate("/properties")
       })
       .catch((error) => {
         console.log(error)
-        console.log(userData)
       })
     setUserCheck({
       email: "", password: ""
     })
   }
 
+  const displayPassword = () => {
+    hide(!show)
+  }
+
   return (
-    <Container>
+    <Container style={{backgroundColor:"black"}} >
       <Row>
-        <Col className='text-center' lg={5} md={4} sm={3} style={{ marginLeft: "25%" }}>
+        <Col lg={"3"} style={{ backgroundColor: "green" }} >
+          <RegisterAdvantage />
+        </Col>
+        <Col lg={"6"} className='text-center' md={4} sm={3} style={{ backgroundColor: "red" }}>
           <Form>
             <Form.Group className="mb-3" controlId="formBasicEmail">
               <Form.Label>Email address</Form.Label>
@@ -46,18 +57,23 @@ function Login() {
                 We'll never share your email with anyone else.
               </Form.Text>
             </Form.Group>
-
-            <Form.Group className="mb-3" controlId="formBasicPassword">
-              <Form.Label>Password</Form.Label>
-              <Form.Control type="password" placeholder="Password" name='password' value={userCheck.password} onChange={handleChange} />
-            </Form.Group>
-            {/* <Form.Group className="mb-3" controlId="formBasicCheckbox">
-              <Form.Check type="checkbox" label="Check me out" />
-            </Form.Group> */}
+            <Form.Label>Password</Form.Label>
+            <InputGroup className="mb-3" controlId="formBasicPassword">
+              <Form.Control type={show ? 'password' : 'text'} placeholder="Password" name='password' value={userCheck.password} onChange={handleChange} />
+              <InputGroup.Text id="basic-addon1">
+                {" "}
+                <div onClick={() => displayPassword()} >
+                  {show ? <FaEyeSlash /> : <FaEye />}
+                </div>
+              </InputGroup.Text>
+            </InputGroup>
             <Button variant="primary" type="submit" onClick={handleSubmit} >
               Submit
             </Button>
           </Form>
+        </Col>
+        <Col lg={"3"} style={{ backgroundColor: "yellow" }} >
+          <FeedBack />
         </Col>
       </Row>
     </Container>

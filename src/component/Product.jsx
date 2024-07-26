@@ -100,7 +100,7 @@ function Product(props) {
   if (props.errMsg) {
     return <div>Error: {props.errMsg.message}</div>;
   }
-  // console.log(props.properties)
+  
 
   return (
     <Container>
