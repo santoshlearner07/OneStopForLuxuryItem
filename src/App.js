@@ -20,7 +20,7 @@ function App() {
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        const response = await fetch('http://localhost:8888/api/properties'); //remove fetch
+        const response = await fetch('http://localhost:8888/api/properties/get'); //remove fetch
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

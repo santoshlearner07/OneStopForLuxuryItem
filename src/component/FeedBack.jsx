@@ -9,7 +9,7 @@ function FeedBack() {
 
 
   useEffect(() => {
-    axios.get(`${BaseApi}/submitfeedback`)
+    axios.get(`${BaseApi}/getAllFeedback`)
       .then((res) => {
         setDisplayReview(res.data);
       }).catch((error) => {

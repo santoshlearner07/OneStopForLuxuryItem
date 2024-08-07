@@ -1,16 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, Card, Col, Container, Form, ListGroup, Overlay, OverlayTrigger, Popover, Row, Tooltip } from 'react-bootstrap';
-import Carousel from 'react-bootstrap/Carousel';
-import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode'
 import axios from 'axios';
 import BaseApi from '../utils/BaseAPI';
+import FilteredProperties from './FilteredProperties';
 
 function Product(props) {
   const [isFocus, setIsFocus] = useState(false)
-  const [show, hide] = useState(null);
-  const zoom = 13;
-  const navigate = useNavigate();
   const [filters, setFilters] = useState({
     address: '',
     bedrooms: [],
@@ -29,9 +25,6 @@ function Product(props) {
     applyFilters();
   }, [props.properties, filters]);
 
-  const viewOnMap = (mapId) => {
-    hide(show === mapId ? null : mapId);
-  };
 
   const applyFilters = () => {
     let filtered = props.properties;
@@ -153,11 +146,10 @@ function Product(props) {
     setIsFocus(true)
     const token = localStorage.getItem('token')
     if (token) {
-
       const decoded = jwtDecode(token)
       const decodedEmail = decoded.email
       console.log(decodedEmail)
-      axios.get(`${BaseApi}/saveSearch?email=${decodedEmail}`)
+      axios.get(`${BaseApi}/getUserSearch?email=${decodedEmail}`)
         .then((res) => {
           setpastSearch(res.data.searchData
           )
@@ -167,17 +159,12 @@ function Product(props) {
         })
 
     } else {
-      console.log("dntknow")
+      console.log("")
     }
     setTimeout(() => {
       setIsFocus(false)
     }, 3000);
-
   }
-
-  const displaySingleProperty = (property, index) => {
-    navigate(`/properties/${property}`);
-  };
 
   if (props.loading) {
     return <div>Loading...</div>;
@@ -290,56 +277,7 @@ function Product(props) {
             </Form>
           </Col>
           <Col>
-            <Row xl={2} lg={2} md={1} sm={1} xs={1}>
-              {filteredProperties.map((item, index) => {
-                return (
-                  <Col key={index}>
-                    <Card>
-                      <Card.Body onClick={() => displaySingleProperty(item.id, index)}>
-                        <Carousel>
-                          {item.propertyImages.images.map((image, imgIndex) => (
-                            <Carousel.Item key={imgIndex}>
-                              <img
-                                className="d-block w-100"
-                                src={image.srcUrl}
-                                alt={`Property ${image.id} Image ${imgIndex}`}
-                                width={'100%'}
-                                height={'250px'}
-                              />
-                            </Carousel.Item>
-                          ))}
-                        </Carousel>
-                        <Card.Title>Displayed:- {item.addedOrReduced}</Card.Title>
-                        <Card.Text>id:- {item.id}</Card.Text>
-                        <ListGroup className="list-group-flush">
-                          <ListGroup.Item>
-                            Bathrooms:- {item.bathrooms} and Bedrooms:- {item.bedrooms}
-                          </ListGroup.Item>
-                          <ListGroup.Item>Address:- {item.displayAddress}</ListGroup.Item>
-                          <ListGroup.Item>Price:- {item.price.amount} £</ListGroup.Item>
-                          <ListGroup.Item>Brief:- {item.propertyTypeFullDescription}</ListGroup.Item>
-                        </ListGroup>
-                      </Card.Body>
-                      <ListGroup className="list-group-flush">
-                        <ListGroup.Item onClick={() => viewOnMap(item.id)}>View On Map</ListGroup.Item>
-                        <ListGroup.Item>
-                          {show === item.id && (
-                            <iframe
-                              width={'375'}
-                              height={'300'}
-                              style={{ border: 'none' }}
-                              src={`https://maps.google.com/maps?q=${item.location.latitude},${item.location.longitude}&z=${zoom}&output=embed`}
-                              title="google map"
-                            />
-                          )}
-                        </ListGroup.Item>
-                      </ListGroup>
-                    </Card>
-                    <br />
-                  </Col>
-                );
-              })}
-            </Row>
+            <FilteredProperties filteredProperties={filteredProperties} />
           </Col>
         </Row>
       )}
