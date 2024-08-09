@@ -27,11 +27,12 @@ function App() {
         }
 
         const data = await response.json();
-        // console.log(data)
         setProperties(data);
         setLoading(false);
+        console.log(data)
       } catch (error) {
-        setError(error);
+        // setError(error);
+        setError(`Maintenance break. Come back after some time.`)
         setLoading(false);
       }
     };
@@ -47,7 +48,7 @@ function App() {
         <Route path='/login' element={<Login />} />
         <Route path='/register' element={<Register />} />
         <Route path='/properties' element={
-           <Product properties={properties} loading={loading} errMsg={error} />
+          <Product properties={properties} loading={loading} errMsg={error} />
         } />
         <Route path='/properties/:id' element={<SingleProperty />} />
       </Routes>

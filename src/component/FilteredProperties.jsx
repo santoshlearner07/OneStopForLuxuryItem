@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Card, Carousel, Col, ListGroup, Row } from 'react-bootstrap';
+import { Button, Card, Carousel, Col, ListGroup, Row } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
 function FilteredProperties(props) {
@@ -13,10 +13,31 @@ function FilteredProperties(props) {
         navigate(`/properties/${property}`);
     };
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const propertyPerPage = 6;
+
+    const totalPage = Math.ceil(props.filteredProperties.length / propertyPerPage);
+
+    const indexOfLastProperty = currentPage * propertyPerPage;
+    const indexOfFirstProperty = indexOfLastProperty - propertyPerPage;
+    const currentProperty = props.filteredProperties.slice(indexOfFirstProperty, indexOfLastProperty);
+
+    const nextProperty = () => {
+        if (currentPage < totalPage) {
+            setCurrentPage(currentPage + 1);
+        }
+    }
+
+    const prevProperty = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1)
+        }
+    }
+
     return (
         <div>
             <Row xl={2} lg={2} md={1} sm={1} xs={1}>
-                {props.filteredProperties.map((item, index) => {
+                {currentProperty.map((item, index) => {
                     return (
                         <Col key={index}>
                             <Card>
@@ -65,6 +86,17 @@ function FilteredProperties(props) {
                     );
                 })}
             </Row>
+            <div className="pagination-controls" style={{ marginTop: '20px', textAlign: 'center' }}>
+                <Button onClick={prevProperty} disabled={currentPage === 1}>
+                    Previous
+                </Button>
+                <span style={{ margin: '0 10px' }}>
+                    Page {currentPage} of {totalPage}
+                </span>
+                <Button onClick={nextProperty} disabled={currentPage === totalPage}>
+                    Next
+                </Button>
+            </div>
         </div>
     )
 }

@@ -4,8 +4,11 @@ import { jwtDecode } from 'jwt-decode'
 import axios from 'axios';
 import BaseApi from '../utils/BaseAPI';
 import FilteredProperties from './FilteredProperties';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Product(props) {
+  const emptySearch = () => toast.warning("Cannot search empty address");
   const [isFocus, setIsFocus] = useState(false)
   const [filters, setFilters] = useState({
     address: '',
@@ -20,6 +23,29 @@ function Product(props) {
   const [filteredProperties, setFilteredProperties] = useState([]);
 
   const [pastSearch, setpastSearch] = useState([]);
+
+  // const [currentPage, setCurrentPage] = useState(1);
+  // const propertyPerPage = 5;
+
+  // const totalPage = Math.ceil(props.properties.length / propertyPerPage);
+
+  // const indexOfLastProperty = currentPage * propertyPerPage;
+  // const indexOfFirstProperty = indexOfLastProperty - propertyPerPage;
+  // const currentProperty = props.properties.slice(indexOfFirstProperty, indexOfLastProperty);
+
+  // const nextProperty = () => {
+  //   if (currentPage < totalPage) {
+  //     setCurrentPage(currentPage + 1);
+  //   }
+  // }
+
+  // const prevPage = () => {
+  //   if (currentPage > 1) {
+  //     setCurrentPage(currentPage - 1)
+  //   }
+  // }
+
+
 
   useEffect(() => {
     applyFilters();
@@ -122,7 +148,8 @@ function Product(props) {
           console.log(res)
         })
         .catch((err) => {
-          alert("Cannot search empty address")
+          // alert("Cannot search empty address")
+          emptySearch();
           console.log(err)
         })
     } else {
@@ -167,11 +194,11 @@ function Product(props) {
   }
 
   if (props.loading) {
-    return <div>Loading...</div>;
+    return <h1 className='text-center mt-5 mb-5'>Loading...</h1>;
   }
 
   if (props.errMsg) {
-    return <div>Error: {props.errMsg.message}</div>;
+    return <h1 className='text-center mt-5 mb-5' >Error: {props.errMsg}</h1>;
   }
 
   return (
@@ -281,7 +308,19 @@ function Product(props) {
           </Col>
         </Row>
       )}
+      {/* <div className="pagination-controls" style={{ marginTop: '20px', textAlign: 'center' }}>
+        <Button onClick={prevPage} disabled={currentPage === 1}>
+          Previous
+        </Button>
+        <span style={{ margin: '0 10px' }}>
+          Page {currentPage} of {totalPage}
+        </span>
+        <Button onClick={nextProperty} disabled={currentPage === totalPage}>
+          Next
+        </Button>
+      </div> */}
       {!props.properties && <div>No data to display</div>}
+      <ToastContainer />
     </Container>
   );
 }

@@ -5,8 +5,16 @@ import BaseApi from '../utils/BaseAPI';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import FeedBack from './FeedBack';
 import RegisterAdvantage from './RegisterAdvantage';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Register() {
+  const passCannotBeEmpty = () => toast.error('Password cannot be empty')
+  const minimumLenght = () => toast.error('Password should be of minimum 8 character')
+  const userRegisterSuccess = () => toast.success('Successfull')
+  const passNotMatch = () => toast.success('Password does not match')
+
+  // const notify = () => toast("Wow so easy!");
   const [userDetail, setUserDetails] = useState({
     fName: "", lName: "", email: "", pass: "", confPass: "", address: "", gender: "", dateOfBirth: ""
   })
@@ -40,14 +48,17 @@ function Register() {
     }
 
     if (!userDetail.pass) {
-      alert("Password cannot be empty")
+      // alert("Password cannot be empty")
+      passCannotBeEmpty();
     } else if (userDetail.pass < 8) {
-      alert("Password should be of minimum 8 character")
+      // alert("Password should be of minimum 8 character")
+      minimumLenght();
     } else if (userDetail.pass === userDetail.confPass) {
       axios.post(`${BaseApi}/register`, userData)
         .then((res) => {
-          console.log(res)
-          console.log(userData)
+          // console.log(res)
+          // console.log(userData)
+          userRegisterSuccess();
         })
         .catch((error) => {
           console.log(error)
@@ -57,9 +68,10 @@ function Register() {
         fName: "", lName: "", email: "", pass: "", confPass: "", address: "", gender: "", dateOfBirth: ""
       });
       // console.log(userData)
-      alert('successfull')
+      // alert('successfull')
     } else {
-      alert("Password does not match")
+      // alert("Password does not match")
+      passNotMatch();
     }
 
   }
@@ -93,7 +105,7 @@ function Register() {
               <Form.Control type="email" placeholder="Enter email" name='email' value={userDetail.email} onChange={userRegister} />
             </Form.Group>
             <Row className="mb-3">
-              <Col>
+              <Col sm={12} lg={"6"} md={"6"} >
                 <Form.Label>Password</Form.Label>
                 <InputGroup className="mb-3" controlid="formBasicPassword">
                   <Form.Control type={show ? 'password' : 'text'} placeholder="Password" name='pass' value={userDetail.pass} onChange={userRegister} />
@@ -105,7 +117,7 @@ function Register() {
                   </InputGroup.Text>
                 </InputGroup>
               </Col>
-              <Col>
+              <Col lg={6} md={"6"}>
                 <Form.Group as={Col} controlid="formGridPassword">
                   <Form.Label>Confirm Password</Form.Label>
                   <Form.Control type="password" placeholder="Confirm Password" name='confPass' value={userDetail.confPass} onChange={userRegister} />
@@ -162,6 +174,7 @@ function Register() {
           <FeedBack />
         </Col>
       </Row>
+      <ToastContainer />
     </Container>
   )
 }

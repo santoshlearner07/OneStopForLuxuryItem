@@ -20,10 +20,10 @@ function FeedBack() {
   return (
     <>
       <h1>Customer Feedback</h1>
-      <ul>
+      <ul style={{overflowY:"scroll",height:"50vh"}} >
         {displayReview && displayReview.map((item, index) => {
           return (
-            <li style={{ backgroundColor: "white" }} key={index}><h3>{item.review}</h3></li>
+            <li style={{ backgroundColor: "white"}} key={index}><h3>{item.review}</h3></li>
           )
         })}
       </ul>

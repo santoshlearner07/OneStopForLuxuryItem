@@ -4,8 +4,13 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import BaseApi from '../utils/BaseAPI';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function RateUs() {
+    const thankYouFeedback = () => toast.info("Thank you for your feedback!");
+    const cannotSubmit = () => toast.info("Failed to submit feedback. Please try again.");
+
     const [feedback, setFeeback] = useState({
         email: "", review: ""
     })
@@ -28,13 +33,15 @@ function RateUs() {
 
         axios.post(`${BaseApi}/submitfeedback`, userFeedback)
             .then((res) => {
-                alert('Thank you for your feedback!');
+                // alert('Thank you for your feedback!');
+                thankYouFeedback();
                 setFeeback({ email: "", review: "" });
                 handleClose();
             })
             .catch((err) => {
                 console.error('Error:', err.response ? err.response.data : err.message);
-                alert('Failed to submit feedback. Please try again.');
+                // alert('Failed to submit feedback. Please try again.');
+                cannotSubmit();
             });
     }
 
@@ -79,6 +86,7 @@ function RateUs() {
                     </Button>
                 </Modal.Footer>
             </Modal>
+            <ToastContainer />
         </>
     )
 }

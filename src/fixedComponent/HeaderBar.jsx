@@ -9,7 +9,7 @@ function HeaderBar() {
   return (
     <Navbar collapseOnSelect expand="lg" className="bg-body-tertiary">
       <Container>
-        <Navbar.Brand href="#home">One stop for luxury item</Navbar.Brand>
+        <Navbar.Brand> <NavLink to={'/properties'} className={"nav-link"}> One stop for luxury item </NavLink> </Navbar.Brand>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="me-auto">

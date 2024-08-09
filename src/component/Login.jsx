@@ -48,7 +48,7 @@ function Login() {
         <Col lg={"3"} style={{ backgroundColor: "green" }} >
           <RegisterAdvantage />
         </Col>
-        <Col lg={"6"} className='text-center' md={4} sm={3} style={{ backgroundColor: "red" }}>
+        <Col lg={"6"} className='text-center' md={12} sm={12} style={{ backgroundColor: "red" }}>
           <Form>
             <Form.Group className="mb-3" controlid="formBasicEmail">
               <Form.Label>Email address</Form.Label>
@@ -67,7 +67,7 @@ function Login() {
                 </div>
               </InputGroup.Text>
             </InputGroup>
-            <Button variant="primary" type="submit" onClick={handleSubmit} >
+            <Button className='mb-2' variant="primary" type="submit" onClick={handleSubmit} >
               Submit
             </Button>
           </Form>
