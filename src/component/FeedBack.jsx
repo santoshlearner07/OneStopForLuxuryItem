@@ -11,7 +11,7 @@ function FeedBack() {
   useEffect(() => {
     axios.get(`${BaseApi}/getAllFeedback`)
       .then((res) => {
-        setDisplayReview(res.data);
+        setDisplayReview(res.data.reverse());
       }).catch((error) => {
         console.log(error)
       })
@@ -20,10 +20,10 @@ function FeedBack() {
   return (
     <>
       <h1>Customer Feedback</h1>
-      <ul style={{overflowY:"scroll",height:"50vh"}} >
+      <ul style={{ overflowY: "scroll", height: "50vh" }} >
         {displayReview && displayReview.map((item, index) => {
           return (
-            <li style={{ backgroundColor: "white"}} key={index}><h3>{item.review}</h3></li>
+            <li style={{ backgroundColor: "white" }} key={index}><h3>{item.review}</h3></li>
           )
         })}
       </ul>
