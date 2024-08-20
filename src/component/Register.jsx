@@ -56,8 +56,6 @@ function Register() {
     } else if (userDetail.pass === userDetail.confPass) {
       axios.post(`${BaseApi}/register`, userData)
         .then((res) => {
-          // console.log(res)
-          // console.log(userData)
           userRegisterSuccess();
         })
         .catch((error) => {
@@ -67,10 +65,7 @@ function Register() {
       setUserDetails({
         fName: "", lName: "", email: "", pass: "", confPass: "", address: "", gender: "", dateOfBirth: ""
       });
-      // console.log(userData)
-      // alert('successfull')
     } else {
-      // alert("Password does not match")
       passNotMatch();
     }
 

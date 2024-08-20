@@ -7,7 +7,15 @@ import { FaEye } from "react-icons/fa";
 import { FaEyeSlash } from "react-icons/fa";
 import RegisterAdvantage from './RegisterAdvantage';
 import FeedBack from './FeedBack';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 function Login() {
+  const emailDoesNotMatch = () => toast.error('No user found.')
+  const passNotMatch = () => toast.error('Password does not match')
+  const emailPassDoesNotMatch = () => toast.error('Email or Password does not match')
+
+
   const navigate = useNavigate();
   const [userCheck, setUserCheck] = useState({
     email: "", password: ""
@@ -27,11 +35,17 @@ function Login() {
     axios.post(`${BaseApi}/login`, userData)
       .then((res) => {
         localStorage.setItem('token', res.data.accessToken)
-        console.log(res)
         navigate("/properties")
       })
       .catch((error) => {
-        console.log(error)
+        if (error.response.status == 400) {
+          emailDoesNotMatch();
+        } else if (error.response.status == 401) {
+          passNotMatch();
+        } else {
+          emailPassDoesNotMatch();
+        }
+
       })
     setUserCheck({
       email: "", password: ""
@@ -76,6 +90,7 @@ function Login() {
           <FeedBack />
         </Col>
       </Row>
+      <ToastContainer />
     </Container>
   )
 }

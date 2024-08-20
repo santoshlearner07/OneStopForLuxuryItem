@@ -21,7 +21,6 @@ function FilteredProperties(props) {
     const indexOfLastProperty = currentPage * propertyPerPage;
     const indexOfFirstProperty = indexOfLastProperty - propertyPerPage;
     const currentProperty = props.filteredProperties.slice(indexOfFirstProperty, indexOfLastProperty);
-
     const nextProperty = () => {
         if (currentPage < totalPage) {
             setCurrentPage(currentPage + 1);
@@ -56,11 +55,13 @@ function FilteredProperties(props) {
                                         ))}
                                     </Carousel>
                                     <Card.Title>Displayed:- {item.addedOrReduced}</Card.Title>
-                                    <Card.Text>id:- {item.id}</Card.Text>
+                                    {/* <Card.Text>id:- {item.id}</Card.Text> */}
                                     <ListGroup className="list-group-flush">
                                         <ListGroup.Item>
                                             Bathrooms:- {item.bathrooms} and Bedrooms:- {item.bedrooms}
                                         </ListGroup.Item>
+                                        {item.residential === true ? "Residential Use" : "Commercial Use"}<br />
+                                        {item.students === true ? "Students Use" : "Not for Students"} <br />
                                         <ListGroup.Item>Address:- {item.displayAddress}</ListGroup.Item>
                                         <ListGroup.Item>Price:- {item.price.amount} £</ListGroup.Item>
                                         <ListGroup.Item>Brief:- {item.propertyTypeFullDescription}</ListGroup.Item>

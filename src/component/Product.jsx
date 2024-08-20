@@ -24,33 +24,9 @@ function Product(props) {
 
   const [pastSearch, setpastSearch] = useState([]);
 
-  // const [currentPage, setCurrentPage] = useState(1);
-  // const propertyPerPage = 5;
-
-  // const totalPage = Math.ceil(props.properties.length / propertyPerPage);
-
-  // const indexOfLastProperty = currentPage * propertyPerPage;
-  // const indexOfFirstProperty = indexOfLastProperty - propertyPerPage;
-  // const currentProperty = props.properties.slice(indexOfFirstProperty, indexOfLastProperty);
-
-  // const nextProperty = () => {
-  //   if (currentPage < totalPage) {
-  //     setCurrentPage(currentPage + 1);
-  //   }
-  // }
-
-  // const prevPage = () => {
-  //   if (currentPage > 1) {
-  //     setCurrentPage(currentPage - 1)
-  //   }
-  // }
-
-
-
   useEffect(() => {
     applyFilters();
   }, [props.properties, filters]);
-
 
   const applyFilters = () => {
     let filtered = props.properties;
@@ -65,16 +41,16 @@ function Product(props) {
       filtered = filtered.filter((item) => filters.bedrooms.includes(item.bedrooms));
     }
 
-    if (filters.bathrooms.length > 0) {
-      filtered = filtered.filter((item) => filters.bathrooms.includes(item.bathrooms));
-    }
-
     if (filters.lessThan5Bedrooms) {
       filtered = filtered.filter((item) => item.bedrooms < 5);
     }
 
     if (filters.moreThan5Bedrooms) {
       filtered = filtered.filter((item) => item.bedrooms > 5);
+    }
+
+    if (filters.bathrooms.length > 0) {
+      filtered = filtered.filter((item) => filters.bathrooms.includes(item.bathrooms));
     }
 
     if (filters.lessThan5Bathrooms) {
@@ -85,6 +61,36 @@ function Product(props) {
       filtered = filtered.filter((item) => item.bathrooms > 5);
     }
 
+    if (filtered.length === 0) {
+      if (filters.moreThan5Bedrooms && filters.bedrooms.length > 0) {
+        setFilters((prevFilters) => ({
+          ...prevFilters,
+          moreThan5Bedrooms: false,
+        }));
+      }
+
+      if (filters.moreThan5Bathrooms && filters.bathrooms.length > 0) {
+        setFilters((prevFilters) => ({
+          ...prevFilters,
+          moreThan5Bathrooms: false,
+        }));
+      }
+
+      if (filters.lessThan5Bedrooms && filters.moreThan5Bedrooms) {
+        setFilters((prevFilters) => ({
+          ...prevFilters,
+          lessThan5Bedrooms: false,
+        }));
+      }
+
+      if (filters.lessThan5Bathrooms && filters.moreThan5Bathrooms) {
+        setFilters((prevFilters) => ({
+          ...prevFilters,
+          lessThan5Bathrooms: false,
+        }));
+      }
+    }
+
     setFilteredProperties(filtered);
   };
 
@@ -92,43 +98,70 @@ function Product(props) {
     setFilters({ ...filters, address: e.target.value });
   };
 
-  const handleCheckboxChange = (e, type, value) => {
+  const handleCheckboxChange = (e, filterType, value) => {
     const isChecked = e.target.checked;
-    let updatedFilters = { ...filters };
 
-    if (type === 'bedrooms') {
-      if (isChecked) {
-        updatedFilters.bedrooms.push(value);
-      } else {
-        updatedFilters.bedrooms = updatedFilters.bedrooms.filter((item) => item !== value);
+    setFilters((prevFilters) => {
+      let updatedFilters = { ...prevFilters };
+
+      if (filterType === 'bedrooms') {
+        if (isChecked) {
+          updatedFilters.bedrooms.push(value);
+        } else {
+          updatedFilters.bedrooms = prevFilters.bedrooms.filter((val) => val !== value);
+        }
+
+        if (updatedFilters.bedrooms.some((val) => val >= 5)) {
+          updatedFilters.lessThan5Bedrooms = false;
+        } else if (updatedFilters.lessThan5Bedrooms) {
+          updatedFilters.bedrooms = updatedFilters.bedrooms.filter((val) => val < 5);
+        }
+
+        if (updatedFilters.lessThan5Bedrooms && isChecked && value >= 5) {
+          updatedFilters.lessThan5Bedrooms = false;
+        }
+      } else if (filterType === 'bathrooms') {
+        if (isChecked) {
+          updatedFilters.bathrooms.push(value);
+        } else {
+          updatedFilters.bathrooms = prevFilters.bathrooms.filter((val) => val !== value);
+        }
+
+        // disable bathroom checkboxes when moreThan5Bedrooms is selected
+        if (updatedFilters.moreThan5Bedrooms && (value === 1 || value === 2 || value === 3)) {
+          return prevFilters; // Ignore selection of 1, 2, 3 bathrooms if moreThan5Bedrooms is checked
+        }
+
+      } else if (filterType === 'lessThan5Bedrooms') {
+        updatedFilters.lessThan5Bedrooms = isChecked;
+        if (isChecked) {
+          updatedFilters.moreThan5Bedrooms = false;
+          updatedFilters.bedrooms = updatedFilters.bedrooms.filter((val) => val < 5);
+        }
+      } else if (filterType === 'moreThan5Bedrooms') {
+        updatedFilters.moreThan5Bedrooms = isChecked;
+        if (isChecked) {
+          updatedFilters.lessThan5Bedrooms = false;
+          updatedFilters.bedrooms = updatedFilters.bedrooms.filter((val) => val >= 5);
+
+          // disable bathroom checkboxes when moreThan5Bedrooms is selected
+          updatedFilters.bathrooms = updatedFilters.bathrooms.filter((val) => val !== 1 && val !== 2 && val !== 3);
+        }
+      } else if (filterType === 'lessThan5Bathrooms') {
+        updatedFilters.lessThan5Bathrooms = isChecked;
+        if (isChecked) {
+          updatedFilters.moreThan5Bathrooms = false;
+          updatedFilters.bathrooms = updatedFilters.bathrooms.filter((val) => val < 5);
+        }
+      } else if (filterType === 'moreThan5Bathrooms') {
+        updatedFilters.moreThan5Bathrooms = isChecked;
+        if (isChecked) {
+          updatedFilters.lessThan5Bathrooms = false;
+          updatedFilters.bathrooms = updatedFilters.bathrooms.filter((val) => val >= 5);
+        }
       }
-    }
-
-    if (type === 'bathrooms') {
-      if (isChecked) {
-        updatedFilters.bathrooms.push(value);
-      } else {
-        updatedFilters.bathrooms = updatedFilters.bathrooms.filter((item) => item !== value);
-      }
-    }
-
-    if (type === 'lessThan5Bedrooms') {
-      updatedFilters.lessThan5Bedrooms = isChecked;
-    }
-
-    if (type === 'moreThan5Bedrooms') {
-      updatedFilters.moreThan5Bedrooms = isChecked;
-    }
-
-    if (type === 'lessThan5Bathrooms') {
-      updatedFilters.lessThan5Bathrooms = isChecked;
-    }
-
-    if (type === 'moreThan5Bathrooms') {
-      updatedFilters.moreThan5Bathrooms = isChecked;
-    }
-
-    setFilters(updatedFilters);
+      return updatedFilters;
+    });
   };
 
   const handleSubmit = (e) => {
@@ -137,23 +170,20 @@ function Product(props) {
     if (token) {
       const decoded = jwtDecode(token)
       const decodedEmail = decoded.email
-      console.log(decodedEmail)
       const savingSearch = {
         email: decodedEmail,
         searchData: filters.address
       }
-      console.log(savingSearch)
       axios.post(`${BaseApi}/saveSearch`, savingSearch)
         .then((res) => {
           console.log(res)
         })
         .catch((err) => {
-          // alert("Cannot search empty address")
           emptySearch();
           console.log(err)
         })
     } else {
-      console.log("dntknow")
+      console.log("")
     }
   }
 
@@ -175,7 +205,6 @@ function Product(props) {
     if (token) {
       const decoded = jwtDecode(token)
       const decodedEmail = decoded.email
-      console.log(decodedEmail)
       axios.get(`${BaseApi}/getUserSearch?email=${decodedEmail}`)
         .then((res) => {
           setpastSearch(res.data.searchData
@@ -308,17 +337,6 @@ function Product(props) {
           </Col>
         </Row>
       )}
-      {/* <div className="pagination-controls" style={{ marginTop: '20px', textAlign: 'center' }}>
-        <Button onClick={prevPage} disabled={currentPage === 1}>
-          Previous
-        </Button>
-        <span style={{ margin: '0 10px' }}>
-          Page {currentPage} of {totalPage}
-        </span>
-        <Button onClick={nextProperty} disabled={currentPage === totalPage}>
-          Next
-        </Button>
-      </div> */}
       {!props.properties && <div>No data to display</div>}
       <ToastContainer />
     </Container>

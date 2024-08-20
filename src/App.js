@@ -29,7 +29,6 @@ function App() {
         const data = await response.json();
         setProperties(data);
         setLoading(false);
-        console.log(data)
       } catch (error) {
         // setError(error);
         setError(`Maintenance break. Come back after some time.`)
