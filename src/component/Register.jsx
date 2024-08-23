@@ -77,12 +77,12 @@ function Register() {
   }
 
   return (
-    <Container style={{ backgroundColor: "black" }}  >
+    <Container >
       <Row>
-        <Col lg={"3"} style={{ backgroundColor: "red" }} >
+        <Col lg={"3"} >
           <RegisterAdvantage />
         </Col>
-        <Col lg={"6"} style={{ backgroundColor: "yellow" }} >
+        <Col lg={"6"}>
           <Form>
             <Row className="mb-3 mt-3">
               <Form.Group as={Col} controlid="formGridFName">
@@ -165,7 +165,7 @@ function Register() {
             </Button>
           </Form>
         </Col>
-        <Col lg={"3"} style={{ backgroundColor: "green" }} >
+        <Col lg={"3"} >
           <FeedBack />
         </Col>
       </Row>

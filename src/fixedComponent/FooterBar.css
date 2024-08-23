@@ -1,0 +1,6 @@
+.aboutUs{
+    background-color: yellow;
+}
+.aboutUs:hover{
+    content: attr("hellow");
+}

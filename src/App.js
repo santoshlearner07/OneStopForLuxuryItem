@@ -9,6 +9,7 @@ import Home from './component/Home';
 import SingleProperty from './component/SingleProperty';
 import Login from './component/Login';
 import Register from './component/Register';
+import BG from "./assessts/BG.jpg"
 import AuthCheck from './auth/AuthCheck';
 
 function App() {
@@ -40,7 +41,9 @@ function App() {
   }, []);
 
   return (
-    <Container fluid="xxl">
+    <div  className='App'  >
+
+    <Container>
       <HeaderBar />
       <Routes>
         <Route path='/' element={<Home />} />
@@ -53,6 +56,7 @@ function App() {
       </Routes>
       <FooterBar />
     </Container>
+        </div>
   );
 }
 

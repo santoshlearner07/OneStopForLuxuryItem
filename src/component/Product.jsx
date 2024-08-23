@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Button, Card, Col, Container, Form, ListGroup, Overlay, OverlayTrigger, Popover, Row, Tooltip } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import { Button, Col, Container, Form, OverlayTrigger, Row, Tooltip } from 'react-bootstrap';
 import { jwtDecode } from 'jwt-decode'
 import axios from 'axios';
 import BaseApi from '../utils/BaseAPI';
@@ -18,6 +18,8 @@ function Product(props) {
     bathrooms: [],
     lessThan5Bathrooms: false,
     moreThan5Bathrooms: false,
+    minPrice: '',
+    maxPrice: 10000000,
   });
 
   const [filteredProperties, setFilteredProperties] = useState([]);
@@ -90,7 +92,9 @@ function Product(props) {
         }));
       }
     }
-
+    filtered = filtered.filter((item) =>
+      item.price.amount >= filters.minPrice && item.price.amount <= filters.maxPrice
+    );
     setFilteredProperties(filtered);
   };
 
@@ -170,6 +174,7 @@ function Product(props) {
     if (token) {
       const decoded = jwtDecode(token)
       const decodedEmail = decoded.email
+      localStorage.setItem('email', decodedEmail)
       const savingSearch = {
         email: decodedEmail,
         searchData: filters.address
@@ -222,6 +227,14 @@ function Product(props) {
     }, 3000);
   }
 
+  const increasePrice = () => {
+    setFilters(prevFilters => ({
+      ...prevFilters,
+      minPrice: (parseInt(prevFilters.minPrice) || 0) + 5000
+    }));
+  };
+
+
   if (props.loading) {
     return <h1 className='text-center mt-5 mb-5'>Loading...</h1>;
   }
@@ -257,6 +270,28 @@ function Product(props) {
               </Form.Group>
               <Button type="submit">Search address</Button>
             </Form>
+            <Form.Group>
+              <Form.Label>Price Range</Form.Label>
+              <Row>
+                <Col>
+                  <Form.Control
+                    type="number"
+                    placeholder="Min Price"
+                    value={filters.minPrice}
+                    onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })}
+                  />
+                </Col>
+                <Col>
+                  <Form.Control
+                    type="number"
+                    placeholder="Max Price"
+                    value={filters.maxPrice}
+                    onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })}
+                  />
+                </Col>
+                <Button onClick={increasePrice} >Increase</Button>
+              </Row>
+            </Form.Group>
             <Form style={{ display: 'flex', flexDirection: 'column' }}>
               <Form.Group>
                 <Form.Label>Bedrooms</Form.Label>

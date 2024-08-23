@@ -4,9 +4,7 @@ import axios from 'axios';
 
 function FeedBack() {
 
-
   const [displayReview, setDisplayReview] = useState('');
-
 
   useEffect(() => {
     axios.get(`${BaseApi}/getAllFeedback`)
@@ -20,10 +18,10 @@ function FeedBack() {
   return (
     <>
       <h1>Customer Feedback</h1>
-      <ul style={{ overflowY: "scroll", height: "50vh" }} >
+      <ul style={{ overflowY: "scroll", height: "50vh", backgroundColor: "grey", opacity: "0.9" }} >
         {displayReview && displayReview.map((item, index) => {
           return (
-            <li style={{ backgroundColor: "white" }} key={index}><h3>{item.review}</h3></li>
+            <li key={index}><h5 style={{ color: "white" }} >{item.review}</h5></li>
           )
         })}
       </ul>
