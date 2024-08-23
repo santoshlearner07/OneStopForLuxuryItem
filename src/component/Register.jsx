@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button, Col, Container, Form, InputGroup, Row } from 'react-bootstrap'
 import BaseApi from '../utils/BaseAPI';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
@@ -18,11 +18,17 @@ function Register() {
   const [userDetail, setUserDetails] = useState({
     fName: "", lName: "", email: "", pass: "", confPass: "", address: "", gender: "", dateOfBirth: ""
   })
+  const [isFormValid, setIsFormValid] = useState(false);
   const [show, hide] = useState(true);
   const userRegister = (event) => {
     const { name, value } = event.target;
     setUserDetails((prevData) => ({ ...prevData, [name]: value }))
   }
+
+  useEffect(() => {
+    const allFieldsFilled = Object.values(userDetail).every(field => field !== '');
+    setIsFormValid(allFieldsFilled);
+  }, [userDetail])
 
   const randomUniqueNumber = () => {
     return Math.floor(Math.random() * 100000) + 1;
@@ -160,7 +166,7 @@ function Register() {
                 <Form.Control type="date" name='dateOfBirth' id='dateOfBirth' label='dateOfBirth' value={userDetail.dateOfBirth} onChange={userRegister} />
               </Col>
             </Row>
-            <Button variant="primary" type="submit" className="mb-3" onClick={handleSubmitUser} >
+            <Button variant="primary" type="submit" className="mb-3" onClick={handleSubmitUser} disabled={!isFormValid}>
               Register
             </Button>
           </Form>

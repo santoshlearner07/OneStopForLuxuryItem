@@ -15,7 +15,12 @@ function FooterBar() {
   return (
     <div>
       <Container>
-        <Row style={{ backgroundColor: "grey" }} >
+        <Row style={{
+          backgroundColor: '#343a40',
+          color: "white",
+          textAlign: 'center',
+          padding: "10px 0",
+        }} >
           <Col>
             <h5>Contact Us</h5>
             {/* <p>1234 Main Street, Suite 100<br />City, State, 12345</p> */}

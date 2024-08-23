@@ -62,7 +62,7 @@ function Login() {
         <Col lg={"3"}  >
           {/* <RegisterAdvantage /> */}
         </Col>
-        <Col lg={"6"} className='text-center' md={12} sm={12} style={{ }}>
+        <Col lg={"6"} className='text-center' md={12} sm={12} style={{ marginBottom:"200px" }}>
           <Form>
             <Form.Group className="mb-3" controlid="formBasicEmail">
               <Form.Label>Email address</Form.Label>
@@ -86,7 +86,7 @@ function Login() {
             </Button>
           </Form>
         </Col>
-        <Col lg={"3"}>
+        <Col lg={"3"} >
           {/* <FeedBack /> */}
         </Col>
       </Row>

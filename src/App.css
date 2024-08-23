@@ -4,6 +4,7 @@
   /* background-color: yellow; */
   background-size: cover;
   /* height: 100vh; */
+  min-height: 100vh;
   background-repeat: repeat-y;
   background-position: top left
 }
