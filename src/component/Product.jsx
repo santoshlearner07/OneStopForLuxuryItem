@@ -61,7 +61,7 @@ function Product(props) {
       minPrice, maxPrice
     } = currentFilters;
 
-    const inputAddress = address.trim().toLowerCase();
+    const inputAddress = address?.trim().toLowerCase();
     if (inputAddress) {
       console.log(inputAddress)
       filtered = filtered.filter(property => {
@@ -70,7 +70,7 @@ function Product(props) {
         return normalizedPropertyAddress.includes(inputAddress);
       });
     }
-    console.log(filtered)
+    // console.log(filtered)
     filtered = filtered.filter(property => {
       let bedroomMatch = true;
 
