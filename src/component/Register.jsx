@@ -13,22 +13,38 @@ function Register() {
   const minimumLenght = () => toast.error('Password should be of minimum 8 character')
   const userRegisterSuccess = () => toast.success('Successfull')
   const passNotMatch = () => toast.success('Password does not match')
+  const PASSWORDPATTERN = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
 
   // const notify = () => toast("Wow so easy!");
   const [userDetail, setUserDetails] = useState({
     fName: "", lName: "", email: "", pass: "", confPass: "", address: "", gender: "", dateOfBirth: ""
   })
+  const [errors, setErrors] = useState({
+    password: '',
+  });
   const [isFormValid, setIsFormValid] = useState(false);
   const [show, hide] = useState(true);
   const userRegister = (event) => {
     const { name, value } = event.target;
     setUserDetails((prevData) => ({ ...prevData, [name]: value }))
+    validatePassword(value)
   }
 
   useEffect(() => {
     const allFieldsFilled = Object.values(userDetail).every(field => field !== '');
     setIsFormValid(allFieldsFilled);
   }, [userDetail])
+
+  const validatePassword = (pass) => {
+    if (!PASSWORDPATTERN.test(pass)) {
+      setErrors({ password: 'Password must be at least 8 characters, include a letter, a number, and a special character.' });
+      setIsFormValid(false);
+    } else {
+      setErrors({ password: '' });
+      setIsFormValid(true);
+    }
+  }
 
   const randomUniqueNumber = () => {
     return Math.floor(Math.random() * 100000) + 1;
@@ -74,7 +90,6 @@ function Register() {
     } else {
       passNotMatch();
     }
-
   }
 
   const handleSubmitUser = (e) => {
@@ -92,41 +107,44 @@ function Register() {
           <Form>
             <Row className="mb-3 mt-3">
               <Form.Group as={Col} controlid="formGridFName">
-                <Form.Label>First Name</Form.Label>
+                {/* <Form.Label>First Name</Form.Label> */}
                 <Form.Control type="text" placeholder="Enter First Name" name='fName' value={userDetail.fName} onChange={userRegister} />
               </Form.Group>
 
               <Form.Group as={Col} controlid="formGridLName">
-                <Form.Label>Last Name</Form.Label>
+                {/* <Form.Label>Last Name</Form.Label> */}
                 <Form.Control type="text" placeholder="Enter Last Name" name='lName' value={userDetail.lName} onChange={userRegister} />
               </Form.Group>
             </Row>
             <Form.Group as={Col} controlid="formGridEmail" className="mb-3">
-              <Form.Label>Email</Form.Label>
+              {/* <Form.Label>Email</Form.Label> */}
               <Form.Control type="email" placeholder="Enter email" name='email' value={userDetail.email} onChange={userRegister} />
             </Form.Group>
             <Row className="mb-3">
               <Col sm={12} lg={"6"} md={"6"} >
-                <Form.Label>Password</Form.Label>
+                {/* <Form.Label>Password</Form.Label> */}
                 <InputGroup className="mb-3" controlid="formBasicPassword">
-                  <Form.Control type={show ? 'password' : 'text'} placeholder="Password" name='pass' value={userDetail.pass} onChange={userRegister} />
+                  <Form.Control type={show ? 'password' : 'text'} placeholder="Password" name='pass' value={userDetail.pass} onChange={userRegister} isInvalid={!!errors.password} />
                   <InputGroup.Text id="basic-addon1">
                     {" "}
                     <div onClick={() => displayPassword()} >
                       {show ? <FaEyeSlash /> : <FaEye />}
                     </div>
                   </InputGroup.Text>
+                  <Form.Control.Feedback type="invalid">
+                    {errors.password}
+                  </Form.Control.Feedback>
                 </InputGroup>
               </Col>
               <Col lg={6} md={"6"}>
                 <Form.Group as={Col} controlid="formGridPassword">
-                  <Form.Label>Confirm Password</Form.Label>
+                  {/* <Form.Label>Confirm Password</Form.Label> */}
                   <Form.Control type="password" placeholder="Confirm Password" name='confPass' value={userDetail.confPass} onChange={userRegister} />
                 </Form.Group>
               </Col>
             </Row>
             <Form.Group className="mb-3" controlid="formGridAddress1">
-              <Form.Label>Address</Form.Label>
+              {/* <Form.Label>Address</Form.Label> */}
               <Form.Control placeholder="Enter your address" name='address' value={userDetail.address} onChange={userRegister} />
             </Form.Group>
             <Row className="mb-3">

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Container, Nav, Navbar, OverlayTrigger, Popover } from 'react-bootstrap'
-import { NavLink } from 'react-router-dom'
+import { Button, Container, Nav, Navbar, OverlayTrigger, Popover, Row } from 'react-bootstrap'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { BsPersonCircle } from "react-icons/bs";
 import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
@@ -9,7 +9,7 @@ import BaseApi from '../utils/BaseAPI';
 function HeaderBar() {
   const [userData, setUserData] = useState();
   const [token, setToken] = useState(localStorage.getItem('token'))
-
+  const navigate = useNavigate();
   const fetchUserDetails = () => {
     if (token) {
       const decoded = jwtDecode(token)
@@ -27,6 +27,7 @@ function HeaderBar() {
   const userSignOut = () => {
     localStorage.clear();
     setToken(null);
+    navigate('/login')
   }
 
   useEffect(() => {
@@ -44,15 +45,16 @@ function HeaderBar() {
         {userData.email}<br />
         User Id:-  {userData.userId}<br />
         {userData.address}<br />
-        <Button className='mt-2' variant="outline-danger" onClick={() => userSignOut()} >Sign out</Button>
-      </Popover.Body>}
+        <Button className='mt-2' variant="outline-danger" style={{ width: "100%" }} onClick={() => userSignOut()} >Sign out</Button>
+      </Popover.Body>
+      }
     </Popover>
   );
-
   return (
+
     <Navbar collapseOnSelect expand="lg" className="bg-body-tertiary">
       <Container>
-        <Navbar.Brand> <NavLink to={'/properties'} className={"nav-link"}> One stop for luxury item </NavLink> </Navbar.Brand>
+        <Navbar.Brand> <NavLink to={'/properties'} className={"nav-link"}> One stop</NavLink> </Navbar.Brand>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="me-auto">

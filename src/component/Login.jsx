@@ -35,6 +35,7 @@ function Login() {
     axios.post(`${BaseApi}/login`, userData)
       .then((res) => {
         localStorage.setItem('token', res.data.accessToken)
+        localStorage.setItem('email',userCheck.email)
         navigate("/properties")
       })
       .catch((error) => {

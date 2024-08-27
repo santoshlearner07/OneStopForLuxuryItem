@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Col, Container, Form, OverlayTrigger, Row, Tooltip } from 'react-bootstrap';
-import { jwtDecode } from 'jwt-decode'
+import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 import BaseApi from '../utils/BaseAPI';
 import FilteredProperties from './FilteredProperties';
@@ -9,7 +9,8 @@ import 'react-toastify/dist/ReactToastify.css';
 
 function Product(props) {
   const emptySearch = () => toast.warning("Cannot search empty address");
-  const [isFocus, setIsFocus] = useState(false)
+
+  const [isFocus, setIsFocus] = useState(false);
   const [filters, setFilters] = useState({
     address: '',
     bedrooms: [],
@@ -19,213 +20,209 @@ function Product(props) {
     lessThan5Bathrooms: false,
     moreThan5Bathrooms: false,
     minPrice: '',
-    maxPrice: 10000000,
+    maxPrice: '',
   });
-
   const [filteredProperties, setFilteredProperties] = useState([]);
-
-  const [pastSearch, setpastSearch] = useState([]);
+  const [pastSearch, setPastSearch] = useState([]);
 
   useEffect(() => {
-    applyFilters();
-  }, [props.properties, filters]);
+    const token = localStorage.getItem('token');
 
-  const applyFilters = () => {
+    if (token) {
+      const decoded = jwtDecode(token);
+      const decodedEmail = decoded.email;
+      localStorage.setItem('email', decodedEmail);
+
+      axios.get(`${BaseApi}/getUserPreferences?email=${decodedEmail}`)
+        .then(res => {
+          const userFilters = res.data.filters;
+          setFilters(userFilters);
+          applyFilters(userFilters);
+        })
+        .catch(err => console.error('Error fetching user preferences:', err));
+    }
+  }, [props.properties]);
+
+  useEffect(() => {
+    applyFilters(filters); // Apply filters whenever the filters state changes
+  }, [filters, props.properties]);
+
+  const applyFilters = (currentFilters) => {
     let filtered = props.properties;
 
-    if (filters.address.trim() !== '') {
-      filtered = filtered.filter((item) =>
-        item.displayAddress.toLowerCase().includes(filters.address.toLowerCase())
-      );
+    if (!Array.isArray(filtered)) {
+      console.error('Expected an array for properties, got:', filtered);
+      return;
     }
 
-    if (filters.bedrooms.length > 0) {
-      filtered = filtered.filter((item) => filters.bedrooms.includes(item.bedrooms));
-    }
+    const {
+      address, bedrooms, lessThan5Bedrooms, moreThan5Bedrooms,
+      bathrooms, lessThan5Bathrooms, moreThan5Bathrooms,
+      minPrice, maxPrice
+    } = currentFilters;
 
-    if (filters.lessThan5Bedrooms) {
-      filtered = filtered.filter((item) => item.bedrooms < 5);
+    const inputAddress = address.trim().toLowerCase();
+    if (inputAddress) {
+      console.log(inputAddress)
+      filtered = filtered.filter(property => {
+        const propertyAddress = property.displayAddress || '';
+        const normalizedPropertyAddress = propertyAddress.trim().toLowerCase();
+        return normalizedPropertyAddress.includes(inputAddress);
+      });
     }
+    console.log(filtered)
+    filtered = filtered.filter(property => {
+      let bedroomMatch = true;
 
-    if (filters.moreThan5Bedrooms) {
-      filtered = filtered.filter((item) => item.bedrooms > 5);
-    }
-
-    if (filters.bathrooms.length > 0) {
-      filtered = filtered.filter((item) => filters.bathrooms.includes(item.bathrooms));
-    }
-
-    if (filters.lessThan5Bathrooms) {
-      filtered = filtered.filter((item) => item.bathrooms < 5);
-    }
-
-    if (filters.moreThan5Bathrooms) {
-      filtered = filtered.filter((item) => item.bathrooms > 5);
-    }
-
-    if (filtered.length === 0) {
-      if (filters.moreThan5Bedrooms && filters.bedrooms.length > 0) {
-        setFilters((prevFilters) => ({
-          ...prevFilters,
-          moreThan5Bedrooms: false,
-        }));
+      if (lessThan5Bedrooms) {
+        bedroomMatch = property.bedrooms < 5;
+      } else if (moreThan5Bedrooms) {
+        bedroomMatch = property.bedrooms >= 5;
+      } else if (bedrooms.length > 0) {
+        bedroomMatch = bedrooms.includes(property.bedrooms);
       }
 
-      if (filters.moreThan5Bathrooms && filters.bathrooms.length > 0) {
-        setFilters((prevFilters) => ({
-          ...prevFilters,
-          moreThan5Bathrooms: false,
-        }));
+      return bedroomMatch;
+    });
+
+    filtered = filtered.filter(property => {
+      let bathroomMatch = true;
+
+      if (lessThan5Bathrooms) {
+        bathroomMatch = property.bathrooms < 5;
+      } else if (moreThan5Bathrooms) {
+        bathroomMatch = property.bathrooms >= 5;
+      } else if (bathrooms.length > 0) {
+        bathroomMatch = bathrooms.includes(property.bathrooms);
       }
 
-      if (filters.lessThan5Bedrooms && filters.moreThan5Bedrooms) {
-        setFilters((prevFilters) => ({
-          ...prevFilters,
-          lessThan5Bedrooms: false,
-        }));
+      return bathroomMatch;
+    });
+
+    filtered = filtered.filter(property => {
+      const propertyPrice = property.price?.amount || 0;
+      let priceMatch = true;
+
+      if (minPrice && maxPrice) {
+        priceMatch = propertyPrice >= Number(minPrice) && propertyPrice <= Number(maxPrice);
+      } else if (minPrice) {
+        priceMatch = propertyPrice >= Number(minPrice);
+      } else if (maxPrice) {
+        priceMatch = propertyPrice <= Number(maxPrice);
       }
 
-      if (filters.lessThan5Bathrooms && filters.moreThan5Bathrooms) {
-        setFilters((prevFilters) => ({
-          ...prevFilters,
-          lessThan5Bathrooms: false,
-        }));
-      }
-    }
-    filtered = filtered.filter((item) =>
-      item.price.amount >= filters.minPrice && item.price.amount <= filters.maxPrice
-    );
+      return priceMatch;
+    });
+
     setFilteredProperties(filtered);
   };
 
   const handleAddressChange = (e) => {
-    setFilters({ ...filters, address: e.target.value });
+    setFilters(prevFilters => ({
+      ...prevFilters,
+      address: e.target.value
+    }));
   };
 
   const handleCheckboxChange = (e, filterType, value) => {
     const isChecked = e.target.checked;
 
-    setFilters((prevFilters) => {
-      let updatedFilters = { ...prevFilters };
+    setFilters(prevFilters => {
+      const updatedFilters = { ...prevFilters };
 
       if (filterType === 'bedrooms') {
         if (isChecked) {
-          updatedFilters.bedrooms.push(value);
+          updatedFilters.bedrooms = [...updatedFilters.bedrooms, value];
         } else {
-          updatedFilters.bedrooms = prevFilters.bedrooms.filter((val) => val !== value);
-        }
-
-        if (updatedFilters.bedrooms.some((val) => val >= 5)) {
-          updatedFilters.lessThan5Bedrooms = false;
-        } else if (updatedFilters.lessThan5Bedrooms) {
-          updatedFilters.bedrooms = updatedFilters.bedrooms.filter((val) => val < 5);
-        }
-
-        if (updatedFilters.lessThan5Bedrooms && isChecked && value >= 5) {
-          updatedFilters.lessThan5Bedrooms = false;
+          updatedFilters.bedrooms = updatedFilters.bedrooms.filter(val => val !== value);
         }
       } else if (filterType === 'bathrooms') {
         if (isChecked) {
-          updatedFilters.bathrooms.push(value);
+          updatedFilters.bathrooms = [...updatedFilters.bathrooms, value];
         } else {
-          updatedFilters.bathrooms = prevFilters.bathrooms.filter((val) => val !== value);
+          updatedFilters.bathrooms = updatedFilters.bathrooms.filter(val => val !== value);
         }
-
-        // disable bathroom checkboxes when moreThan5Bedrooms is selected
-        if (updatedFilters.moreThan5Bedrooms && (value === 1 || value === 2 || value === 3)) {
-          return prevFilters; // Ignore selection of 1, 2, 3 bathrooms if moreThan5Bedrooms is checked
-        }
-
       } else if (filterType === 'lessThan5Bedrooms') {
         updatedFilters.lessThan5Bedrooms = isChecked;
         if (isChecked) {
           updatedFilters.moreThan5Bedrooms = false;
-          updatedFilters.bedrooms = updatedFilters.bedrooms.filter((val) => val < 5);
+          updatedFilters.bedrooms = updatedFilters.bedrooms.filter(val => val < 5);
         }
       } else if (filterType === 'moreThan5Bedrooms') {
         updatedFilters.moreThan5Bedrooms = isChecked;
         if (isChecked) {
           updatedFilters.lessThan5Bedrooms = false;
-          updatedFilters.bedrooms = updatedFilters.bedrooms.filter((val) => val >= 5);
-
-          // disable bathroom checkboxes when moreThan5Bedrooms is selected
-          updatedFilters.bathrooms = updatedFilters.bathrooms.filter((val) => val !== 1 && val !== 2 && val !== 3);
+          updatedFilters.bedrooms = updatedFilters.bedrooms.filter(val => val >= 5);
         }
       } else if (filterType === 'lessThan5Bathrooms') {
         updatedFilters.lessThan5Bathrooms = isChecked;
         if (isChecked) {
           updatedFilters.moreThan5Bathrooms = false;
-          updatedFilters.bathrooms = updatedFilters.bathrooms.filter((val) => val < 5);
+          updatedFilters.bathrooms = updatedFilters.bathrooms.filter(val => val < 5);
         }
       } else if (filterType === 'moreThan5Bathrooms') {
         updatedFilters.moreThan5Bathrooms = isChecked;
         if (isChecked) {
           updatedFilters.lessThan5Bathrooms = false;
-          updatedFilters.bathrooms = updatedFilters.bathrooms.filter((val) => val >= 5);
+          updatedFilters.bathrooms = updatedFilters.bathrooms.filter(val => val >= 5);
         }
       }
+
+      saveFilters(updatedFilters);
       return updatedFilters;
     });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('token');
+
     if (token) {
-      const decoded = jwtDecode(token)
-      const decodedEmail = decoded.email
-      localStorage.setItem('email', decodedEmail)
+      const decoded = jwtDecode(token);
+      const decodedEmail = decoded.email;
+      localStorage.setItem('email', decodedEmail);
+
+      if (!filters.address.trim()) {
+        emptySearch();
+        return;
+      }
+
       const savingSearch = {
         email: decodedEmail,
         searchData: filters.address
-      }
+      };
       axios.post(`${BaseApi}/saveSearch`, savingSearch)
-        .then((res) => {
-          console.log(res)
-        })
-        .catch((err) => {
+        .then(res => console.log(res))
+        .catch(err => {
           emptySearch();
-          console.log(err)
-        })
+          console.error('Error saving search:', err);
+        });
     } else {
-      console.log("")
+      console.log("No token found");
     }
-  }
+  };
 
   const renderTooltip = (props) => (
     <Tooltip id="button-tooltip" {...props}>
-      {
-        pastSearch && pastSearch.map((item, index) => {
-          return <li key={index}>
-            {item}
-          </li>
-        })
-      }
+      {pastSearch && pastSearch.map((item, index) => <li key={index}>{item}</li>)}
     </Tooltip>
   );
 
   const handleFocus = () => {
-    setIsFocus(true)
-    const token = localStorage.getItem('token')
-    if (token) {
-      const decoded = jwtDecode(token)
-      const decodedEmail = decoded.email
-      axios.get(`${BaseApi}/getUserSearch?email=${decodedEmail}`)
-        .then((res) => {
-          setpastSearch(res.data.searchData
-          )
-        })
-        .catch((err) => {
-          console.log(err)
-        })
+    setIsFocus(true);
+    const token = localStorage.getItem('token');
 
-    } else {
-      console.log("")
+    if (token) {
+      const decoded = jwtDecode(token);
+      const decodedEmail = decoded.email;
+
+      axios.get(`${BaseApi}/getUserSearch?email=${decodedEmail}`)
+        .then(res => setPastSearch(res.data.searchData))
+        .catch(err => console.error('Error fetching user search data:', err));
     }
-    setTimeout(() => {
-      setIsFocus(false)
-    }, 3000);
-  }
+
+    setTimeout(() => setIsFocus(false), 3000);
+  };
 
   const increasePrice = () => {
     setFilters(prevFilters => ({
@@ -234,13 +231,19 @@ function Product(props) {
     }));
   };
 
+  const saveFilters = (filters) => {
+    const email = localStorage.getItem('email');
+    axios.post(`${BaseApi}/savePreferences`, { email, filters })
+      .then(res => console.log('Filters saved:', res.data))
+      .catch(err => console.error('Error saving filters:', err));
+  };
 
   if (props.loading) {
     return <h1 className='text-center mt-5 mb-5'>Loading...</h1>;
   }
 
   if (props.errMsg) {
-    return <h1 className='text-center mt-5 mb-5' >Error: {props.errMsg}</h1>;
+    return <h1 className='text-center mt-5 mb-5'>Error: {props.errMsg}</h1>;
   }
 
   return (
@@ -248,13 +251,12 @@ function Product(props) {
       <h1>Property</h1>
       {props.properties && (
         <Row>
-          <Col sm={3} style={{ backgroundColor: 'aqua' }}>
+          <Col sm={3} style={{ backgroundColor: 'black', color: "whitesmoke" }}>
             <Form onSubmit={handleSubmit}>
               <Form.Group>
                 <Form.Label>Search Address</Form.Label>
                 <OverlayTrigger
                   placement="bottom"
-                  // delay={{ show: 250, hide: 400 }}
                   overlay={renderTooltip}
                   trigger="click"
                   show={isFocus}
@@ -268,7 +270,7 @@ function Product(props) {
                   />
                 </OverlayTrigger>
               </Form.Group>
-              <Button type="submit">Search address</Button>
+              <Button type="submit" className='mt-2'>Search Address</Button>
             </Form>
             <Form.Group>
               <Form.Label>Price Range</Form.Label>
@@ -289,10 +291,10 @@ function Product(props) {
                     onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })}
                   />
                 </Col>
-                <Button onClick={increasePrice} >Increase</Button>
+                <Button onClick={increasePrice} className='mt-2'>Increase</Button>
               </Row>
             </Form.Group>
-            <Form style={{ display: 'flex', flexDirection: 'column' }}>
+            <Form>
               <Form.Group>
                 <Form.Label>Bedrooms</Form.Label>
                 <Form.Check

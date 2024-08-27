@@ -91,7 +91,7 @@ function FilteredProperties(props) {
                 <Button onClick={prevProperty} disabled={currentPage === 1}>
                     Previous
                 </Button>
-                <span style={{ margin: '0 10px' }}>
+                <span style={{ margin: '0 10px',color:"white" }}>
                     Page {currentPage} of {totalPage}
                 </span>
                 <Button onClick={nextProperty} disabled={currentPage === totalPage}>
