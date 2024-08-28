@@ -1,11 +1,11 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import { Card } from 'react-bootstrap';
 import BaseApi from '../utils/BaseAPI';
 
-function FetchPreviousSearches() {
-    const [prevInputSearch, setPrevInputSearch] = useState();
+function FetchPreviousSearches({ onSelectSearch }) {
+    const [prevInputSearch, setPrevInputSearch] = useState([]);
 
     useEffect(() => {
         const fetchUserInputs = async () => {
@@ -15,12 +15,10 @@ function FetchPreviousSearches() {
                     const decoded = jwtDecode(token);
                     const decodedEmail = decoded.email;
                     axios.get(`${BaseApi}/getAllUserInput?email=${decodedEmail}`)
-                        .then(res => {
-                            setPrevInputSearch(res.data.filters)
-                        })
+                        .then(res => setPrevInputSearch(res.data.filters || []))
                         .catch(err => {
-                            console.log(err)
-                        })
+                            console.log(err);
+                        });
                 } else {
                     console.log('No token found');
                 }
@@ -31,10 +29,15 @@ function FetchPreviousSearches() {
 
         fetchUserInputs();
     }, []);
+
+    const handleCardClick = (item) => {
+        onSelectSearch(item);
+    };
+
     return (
         <>
-            {prevInputSearch && <h3>Previous Searches</h3>}
-            {prevInputSearch && prevInputSearch.map((item, index) => {
+            {prevInputSearch.length > 0 && <h3>Previous Searches</h3>}
+            {prevInputSearch.map((item, index) => {
                 const locationText = item.address ? `Location: ${item.address}` : '';
                 const bathroomText = item.bathrooms ? `Bathroom: ${item.bathrooms}` : '';
                 const bedroomText = item.bedrooms ? `Bedroom: ${item.bedrooms}` : '';
@@ -42,11 +45,11 @@ function FetchPreviousSearches() {
                 const maxPriceText = item.maxPrice || item.maxPrice === 0 ? `Max Price: ${item.maxPrice}` : '';
 
                 const filterText = [locationText, bathroomText, bedroomText, minPriceText, maxPriceText]
-                    .filter(text => text)  // Remove empty strings
+                    .filter(text => text)
                     .join(', ');
 
                 return (
-                    <Card key={index} className="mb-3">
+                    <Card key={index} className="mb-3" onClick={() => handleCardClick(item)}>
                         <Card.Body>
                             <Card.Text>
                                 {filterText || 'No details available'}
@@ -56,7 +59,7 @@ function FetchPreviousSearches() {
                 );
             })}
         </>
-    )
+    );
 }
 
-export default FetchPreviousSearches
+export default FetchPreviousSearches;

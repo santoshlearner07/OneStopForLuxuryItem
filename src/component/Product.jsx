@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Col, Container, Form, Row, Tooltip, OverlayTrigger, Card } from 'react-bootstrap';
+import { Button, Col, Container, Form, Row, Tooltip, OverlayTrigger } from 'react-bootstrap';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import BaseApi from '../utils/BaseAPI';
@@ -157,6 +157,16 @@ function Product(props) {
     setTimeout(() => setShowTooltip(false), 5000);
   };
 
+  const handleSelectSearch = (item) => {
+    setFilters({
+      address: item.address || '',
+      bedrooms: item.bedrooms.join(', ') || '',
+      bathrooms: item.bathrooms.join(', ') || '',
+      minPrice: item.minPrice || '',
+      maxPrice: item.maxPrice || ''
+    });
+  };
+
   const renderTooltip = (props) => (
     <Tooltip id="button-tooltip" {...props}>
       {pastSearch.length > 0 ? (
@@ -240,7 +250,7 @@ function Product(props) {
                 />
               </Form.Group>
               <Button onClick={handleSaveAll} className='mt-2'>Save All User Inputs</Button>
-              <FetchPreviousSearches />
+              <FetchPreviousSearches onSelectSearch={handleSelectSearch} />
             </Form>
           </Col>
           <Col>
