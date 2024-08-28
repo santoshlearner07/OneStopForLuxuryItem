@@ -1,68 +1,84 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Col, Container, Form, Row, Tooltip, OverlayTrigger } from 'react-bootstrap';
-import axios from 'axios';
+import { Button, Col, Container, Form, OverlayTrigger, Row, Tooltip } from 'react-bootstrap';
 import { jwtDecode } from 'jwt-decode';
+import axios from 'axios';
 import BaseApi from '../utils/BaseAPI';
 import FilteredProperties from './FilteredProperties';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Product(props) {
+  const emptySearch = () => toast.warning("Cannot search empty address");
+
+  const [isFocus, setIsFocus] = useState(false);
   const [filters, setFilters] = useState({
     address: '',
-    bedrooms: '',
+    bedrooms: '', 
     bathrooms: '',
     minPrice: '',
     maxPrice: '',
   });
   const [filteredProperties, setFilteredProperties] = useState([]);
   const [pastSearch, setPastSearch] = useState([]);
-  const [isFocus, setIsFocus] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
-
-  useEffect(() => {
-    if (props.properties.length) {
-      applyFilters(filters);
-    }
-  }, [filters, props.properties]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+
     if (token) {
       const decoded = jwtDecode(token);
       const decodedEmail = decoded.email;
+      localStorage.setItem('email', decodedEmail);
 
-      axios.get(`${BaseApi}/getUserSearch?email=${decodedEmail}`)
-        .then(res => setPastSearch(res.data.searchData || []))
-        .catch(err => console.error('Error fetching user search data:', err));
+      axios.get(`${BaseApi}/getUserPreferences?email=${decodedEmail}`)
+        .then(res => {
+          const userFilters = res.data.filters;
+          setFilters(userFilters);
+          applyFilters(userFilters);
+        })
+        .catch(err => console.error('Error fetching user preferences:', err));
     }
-  }, []);
+  }, [props.properties]);
+
+  useEffect(() => {
+    applyFilters(filters); // Apply filters whenever the filters state changes
+  }, [filters, props.properties]);
 
   const applyFilters = (currentFilters) => {
-    let filtered = props.properties || [];
-
+    let filtered = props.properties;
+    console.log(filtered)
     if (!Array.isArray(filtered)) {
       console.error('Expected an array for properties, got:', filtered);
       return;
     }
 
     const { address, bedrooms, bathrooms, minPrice, maxPrice } = currentFilters;
+    console.log(currentFilters)
+    // Filter by address
     const inputAddress = address?.trim().toLowerCase();
-
     if (inputAddress) {
       filtered = filtered.filter(property => {
         const propertyAddress = property.displayAddress || '';
         const normalizedPropertyAddress = propertyAddress.trim().toLowerCase();
         return normalizedPropertyAddress.includes(inputAddress);
       });
+      console.log("line 64" + filtered)
     }
 
+    // Filter by bedrooms
     if (bedrooms) {
-      filtered = filtered.filter(property => property.bedrooms <= Number(bedrooms));
+      filtered = filtered.filter(property => property.bedrooms === Number(bedrooms));
+      console.log("line 70" + filtered)
+      console.log(filtered)
     }
 
+    // Filter by bathrooms
     if (bathrooms) {
-      filtered = filtered.filter(property => property.bathrooms <= Number(bathrooms));
+      filtered = filtered.filter(property => property.bathrooms === Number(bathrooms));
+      console.log("line 77" + filtered)
+
     }
 
+    // Filter by price range
     filtered = filtered.filter(property => {
       const propertyPrice = property.price?.amount || 0;
       let priceMatch = true;
@@ -76,9 +92,12 @@ function Product(props) {
       }
       return priceMatch;
     });
-
+    console.log("line 95" + filtered)
     setFilteredProperties(filtered);
   };
+
+  // console.log(props.properties)
+  console.log("filteredProperties-> " + filteredProperties )
 
   const handleInputChange = (e, filterType) => {
     const value = e.target.value;
@@ -88,7 +107,7 @@ function Product(props) {
     }));
   };
 
-  const handleSearch = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
 
@@ -98,7 +117,7 @@ function Product(props) {
       localStorage.setItem('email', decodedEmail);
 
       if (!filters.address.trim()) {
-        alert('Cannot search empty address');
+        emptySearch();
         return;
       }
 
@@ -106,10 +125,10 @@ function Product(props) {
         email: decodedEmail,
         searchData: filters.address
       };
-
       axios.post(`${BaseApi}/saveSearch`, savingSearch)
-        .then(res => console.log('Search saved:', res))
+        .then(res => console.log(res))
         .catch(err => {
+          emptySearch();
           console.error('Error saving search:', err);
         });
     } else {
@@ -117,81 +136,41 @@ function Product(props) {
     }
   };
 
-  const handleSaveAll = () => {
+  const renderTooltip = (props) => (
+    <Tooltip id="button-tooltip" {...props}>
+      {pastSearch && pastSearch.map((item, index) => <li key={index}>{item}</li>)}
+    </Tooltip>
+  );
+
+  const handleFocus = () => {
+    setIsFocus(true);
     const token = localStorage.getItem('token');
 
     if (token) {
       const decoded = jwtDecode(token);
       const decodedEmail = decoded.email;
 
-      const savingData = {
-        email: decodedEmail,
-        filters: [{
-          address: filters.address,
-          bedrooms: filters.bedrooms,
-          bathrooms: filters.bathrooms,
-          minPrice: filters.minPrice,
-          maxPrice: filters.maxPrice
-        }]
-      };
-
-      axios.post(`${BaseApi}/saveAllUserInputs`, savingData)
-        .then(res => console.log('All user inputs saved:', res))
-        .catch(err => {
-          if (err.response.status === 404) {
-            alert('User not found. Please create an account to save your data.');
-          } else {
-            console.error('Error saving all user inputs:', err);
-          }
-        });
-    } else {
-      console.log("No token found");
+      axios.get(`${BaseApi}/getUserSearch?email=${decodedEmail}`)
+        .then(res => setPastSearch(res.data.searchData))
+        .catch(err => console.error('Error fetching user search data:', err));
     }
+
+    setTimeout(() => setIsFocus(false), 3000);
   };
 
-  const handleFocus = () => {
-    setIsFocus(true);
-    setShowTooltip(true);
-
-    setTimeout(() => setShowTooltip(false), 5000);
+  const increasePrice = () => {
+    setFilters(prevFilters => ({
+      ...prevFilters,
+      minPrice: (parseInt(prevFilters.minPrice) || 0) + 5000
+    }));
   };
 
-  const renderTooltip = (props) => (
-    <Tooltip id="button-tooltip" {...props}>
-      {pastSearch.length > 0 ? (
-        <ul>
-          {pastSearch.map((item, index) => <li key={index}>{item}</li>)}
-        </ul>
-      ) : (
-        <span>No previous searches</span>
-      )}
-    </Tooltip>
-  );
-
-  useEffect(() => {
-    const fetchUserInputs = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (token) {
-          const decoded = jwtDecode(token);
-          const decodedEmail = decoded.email;
-          axios.get(`${BaseApi}/getAllUserInput?email=${decodedEmail}`)
-            .then(res => {
-              console.log(res.data)
-            })
-            .catch(err => {
-              console.log(err)
-            })
-        } else {
-          console.log('No token found');
-        }
-      } catch (error) {
-        console.error('Error fetching user inputs:', error);
-      }
-    };
-
-    fetchUserInputs();
-  }, []);
+  const saveFilters = (filters) => {
+    const email = localStorage.getItem('email');
+    axios.post(`${BaseApi}/savePreferences`, { email, filters })
+      .then(res => console.log('Filters saved:', res.data))
+      .catch(err => console.error('Error saving filters:', err));
+  };
 
   if (props.loading) {
     return <h1 className='text-center mt-5 mb-5'>Loading...</h1>;
@@ -207,13 +186,14 @@ function Product(props) {
       {props.properties && (
         <Row>
           <Col sm={3} style={{ backgroundColor: 'black', color: "whitesmoke" }}>
-            <Form onSubmit={handleSearch}>
+            <Form onSubmit={handleSubmit}>
               <Form.Group>
-                <Button type="submit" className='mt-2'>Search Address</Button>
+                <Form.Label>Search Address</Form.Label>
                 <OverlayTrigger
                   placement="bottom"
                   overlay={renderTooltip}
-                  show={showTooltip && isFocus} // Show the tooltip based on state
+                  trigger="click"
+                  show={isFocus}
                 >
                   <Form.Control
                     type="text"
@@ -224,32 +204,36 @@ function Product(props) {
                   />
                 </OverlayTrigger>
               </Form.Group>
-              <Form.Group>
-                <Form.Label>Price Range</Form.Label>
-                <Row>
-                  <Col>
-                    <Form.Control
-                      type="number"
-                      placeholder="Min Price"
-                      value={filters.minPrice}
-                      onChange={(e) => handleInputChange(e, 'minPrice')}
-                    />
-                  </Col>
-                  <Col>
-                    <Form.Control
-                      type="number"
-                      placeholder="Max Price"
-                      value={filters.maxPrice}
-                      onChange={(e) => handleInputChange(e, 'maxPrice')}
-                    />
-                  </Col>
-                </Row>
-              </Form.Group>
+              <Button type="submit" className='mt-2'>Search Address</Button>
+            </Form>
+            <Form.Group>
+              <Form.Label>Price Range</Form.Label>
+              <Row>
+                <Col>
+                  <Form.Control
+                    type="number"
+                    placeholder="Min Price"
+                    value={filters.minPrice}
+                    onChange={(e) => handleInputChange(e, 'minPrice')}
+                  />
+                </Col>
+                <Col>
+                  <Form.Control
+                    type="number"
+                    placeholder="Max Price"
+                    value={filters.maxPrice}
+                    onChange={(e) => handleInputChange(e, 'maxPrice')}
+                  />
+                </Col>
+                <Button onClick={increasePrice} className='mt-2'>Increase</Button>
+              </Row>
+            </Form.Group>
+            <Form>
               <Form.Group>
                 <Form.Label>Bedrooms</Form.Label>
                 <Form.Control
                   type="number"
-                  placeholder="Enter maximum number of bedrooms"
+                  placeholder="Enter number of bedrooms"
                   value={filters.bedrooms}
                   onChange={(e) => handleInputChange(e, 'bedrooms')}
                 />
@@ -258,20 +242,21 @@ function Product(props) {
                 <Form.Label>Bathrooms</Form.Label>
                 <Form.Control
                   type="number"
-                  placeholder="Enter maximum number of bathrooms"
+                  placeholder="Enter number of bathrooms"
                   value={filters.bathrooms}
                   onChange={(e) => handleInputChange(e, 'bathrooms')}
                 />
               </Form.Group>
-              <Button onClick={handleSaveAll} className='mt-2'>Save All User Inputs</Button>
             </Form>
           </Col>
           <Col>
+            {/* Pass the filteredProperties to the other component */}
             <FilteredProperties filteredProperties={filteredProperties} />
           </Col>
         </Row>
       )}
       {!props.properties && <div>No data to display</div>}
+      <ToastContainer />
     </Container>
   );
 }

@@ -3,6 +3,7 @@ import { Button, Card, Carousel, Col, ListGroup, Row } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
 function FilteredProperties(props) {
+  // console.log(props)
   const navigate = useNavigate();
   const [show, hide] = useState(null);
   const [userLocation, setUserLocation] = useState({ latitude: null, longitude: null });
