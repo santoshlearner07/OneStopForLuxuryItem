@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Col, Container, Form, Row, Tooltip, OverlayTrigger } from 'react-bootstrap';
+import { Button, Col, Container, Form, Row, Tooltip, OverlayTrigger, Card } from 'react-bootstrap';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import BaseApi from '../utils/BaseAPI';
 import FilteredProperties from './FilteredProperties';
+import FetchPreviousSearches from './FetchPreviousSearches';
 
 function Product(props) {
   const [filters, setFilters] = useState({
@@ -168,31 +169,6 @@ function Product(props) {
     </Tooltip>
   );
 
-  useEffect(() => {
-    const fetchUserInputs = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (token) {
-          const decoded = jwtDecode(token);
-          const decodedEmail = decoded.email;
-          axios.get(`${BaseApi}/getAllUserInput?email=${decodedEmail}`)
-            .then(res => {
-              console.log(res.data)
-            })
-            .catch(err => {
-              console.log(err)
-            })
-        } else {
-          console.log('No token found');
-        }
-      } catch (error) {
-        console.error('Error fetching user inputs:', error);
-      }
-    };
-
-    fetchUserInputs();
-  }, []);
-
   if (props.loading) {
     return <h1 className='text-center mt-5 mb-5'>Loading...</h1>;
   }
@@ -264,6 +240,7 @@ function Product(props) {
                 />
               </Form.Group>
               <Button onClick={handleSaveAll} className='mt-2'>Save All User Inputs</Button>
+              <FetchPreviousSearches />
             </Form>
           </Col>
           <Col>
