@@ -58,12 +58,13 @@ function Product(props) {
     const { bedrooms, bathrooms, minPrice, maxPrice } = currentFilters;
     const { bedroomsPriority, bathroomsPriority, pricePriority } = currentPriorities;
 
+    // Create a list of filter criteria sorted by priority (descending)
     const sortedFilters = [
       { filter: 'bedrooms', priority: Number(bedroomsPriority), value: bedrooms },
       { filter: 'bathrooms', priority: Number(bathroomsPriority), value: bathrooms },
       { filter: 'price', priority: Number(pricePriority), min: minPrice, max: maxPrice }
-    ].filter(item => item.priority > 0) 
-      .sort((a, b) => b.priority - a.priority);
+    ].filter(item => item.priority > 0) // Remove filters with zero priority
+      .sort((a, b) => b.priority - a.priority); // Sort by priority (higher first)
 
     let results = filtered;
 
@@ -71,18 +72,19 @@ function Product(props) {
       if (filter === 'bedrooms' && value) {
         const bedroomsValue = Number(value);
         if (results.length > 0) {
+          // Filter properties based on exact match or less than criteria
           results = results.filter(property => {
             const propertyBedrooms = property.bedrooms || 0;
             return propertyBedrooms === bedroomsValue;
           });
         }
-        if (results.length === 0) break;
+        if (results.length === 0) break; // If no exact match, stop further filtering
       }
 
       if (filter === 'bathrooms' && value) {
         const bathroomsValue = Number(value);
         results = results.filter(property => property.bathrooms <= bathroomsValue);
-        if (results.length === 0) break;
+        if (results.length === 0) break; // If no match, stop further filtering
       }
 
       if (filter === 'price') {
@@ -99,10 +101,11 @@ function Product(props) {
           }
           return priceMatch;
         });
-        if (results.length === 0) break;
+        if (results.length === 0) break; // If no match, stop further filtering
       }
     }
 
+    // Sorting the results based on the priorities
     results.sort((a, b) => {
       let scoreA = 0;
       let scoreB = 0;
@@ -132,7 +135,7 @@ function Product(props) {
         }
       }
 
-      return scoreB - scoreA;
+      return scoreB - scoreA; // Higher score (priority match) comes first
     });
 
     setFilteredProperties(results);
@@ -275,7 +278,7 @@ function Product(props) {
                   placeholder="Enter address"
                   value={filters.address}
                   onChange={(e) => handleInputChange(e, 'address')}
-                  onFocus={handleFocus}
+                  onFocus={handleFocus} // Set focus state when input is focused
                 />
               </OverlayTrigger>
             </Form.Group>
