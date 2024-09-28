@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Col, Container, Form, Row, Tooltip, OverlayTrigger } from 'react-bootstrap';
 import axios from 'axios';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import BaseApi from '../utils/BaseAPI';
 import FilteredProperties from './FilteredProperties';
-import FetchPreviousSearches from './FetchPreviousSearches';
+// import FetchPreviousSearches from './FetchPreviousSearches';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -49,47 +49,49 @@ function Product(props) {
 
   const applyFilters = (currentFilters, currentPriorities) => {
     let filtered = props.properties || [];
-
+  
     if (!Array.isArray(filtered)) {
       console.error('Expected an array for properties, got:', filtered);
       return;
     }
-
+  
     const { bedrooms, bathrooms, minPrice, maxPrice } = currentFilters;
     const { bedroomsPriority, bathroomsPriority, pricePriority } = currentPriorities;
-
+  
+    // Create a list of filter criteria sorted by priority (descending)
     const sortedFilters = [
       { filter: 'bedrooms', priority: Number(bedroomsPriority), value: bedrooms },
       { filter: 'bathrooms', priority: Number(bathroomsPriority), value: bathrooms },
       { filter: 'price', priority: Number(pricePriority), min: minPrice, max: maxPrice }
     ].filter(item => item.priority > 0) 
-      .sort((a, b) => b.priority - a.priority);
-
+      .sort((a, b) => b.priority - a.priority); 
+  
     let results = filtered;
-
+  
     for (const { filter, value, min, max } of sortedFilters) {
       if (filter === 'bedrooms' && value) {
         const bedroomsValue = Number(value);
         if (results.length > 0) {
+          // Filter properties based on exact match or less than criteria
           results = results.filter(property => {
             const propertyBedrooms = property.bedrooms || 0;
             return propertyBedrooms === bedroomsValue;
           });
         }
-        if (results.length === 0) break;
+        if (results.length === 0) break; // If no exact match, stop further filtering
       }
-
+  
       if (filter === 'bathrooms' && value) {
         const bathroomsValue = Number(value);
         results = results.filter(property => property.bathrooms <= bathroomsValue);
-        if (results.length === 0) break;
+        if (results.length === 0) break; // If no match, stop further filtering
       }
-
+  
       if (filter === 'price') {
         results = results.filter(property => {
           const propertyPrice = property.price?.amount || 0;
           let priceMatch = true;
-
+  
           if (min && max) {
             priceMatch = propertyPrice >= Number(min) && propertyPrice <= Number(max);
           } else if (min) {
@@ -99,28 +101,29 @@ function Product(props) {
           }
           return priceMatch;
         });
-        if (results.length === 0) break;
+        if (results.length === 0) break; // If no match, stop further filtering
       }
     }
-
+  
+    // Sorting the results based on the priorities
     results.sort((a, b) => {
       let scoreA = 0;
       let scoreB = 0;
-
+  
       if (bedroomsPriority > 0 && a.bedrooms === Number(filters.bedrooms)) {
         scoreA += Number(bedroomsPriority);
       }
       if (bedroomsPriority > 0 && b.bedrooms === Number(filters.bedrooms)) {
         scoreB += Number(bedroomsPriority);
       }
-
+  
       if (bathroomsPriority > 0 && a.bathrooms <= Number(filters.bathrooms)) {
         scoreA += Number(bathroomsPriority);
       }
       if (bathroomsPriority > 0 && b.bathrooms <= Number(filters.bathrooms)) {
         scoreB += Number(bathroomsPriority);
       }
-
+  
       if (pricePriority > 0) {
         const priceA = a.price?.amount || 0;
         const priceB = b.price?.amount || 0;
@@ -131,13 +134,13 @@ function Product(props) {
           scoreB += Number(pricePriority);
         }
       }
-
-      return scoreB - scoreA;
+  
+      return scoreB - scoreA; // higher score displays first
     });
-
+  
     setFilteredProperties(results);
     console.log("Final filtered and sorted properties:", results);
-  };
+  };  
 
   const handleInputChange = (e, filterType) => {
     const value = e.target.value;
@@ -345,10 +348,10 @@ function Product(props) {
             <Button type="submit" variant="primary">Save Search</Button>
             <Button variant="outline-primary" onClick={handleSaveAll}>Save All Filters</Button>
           </Form>
-          <FetchPreviousSearches
+          {/* <FetchPreviousSearches
             pastSearch={pastSearch}
             onSelectSearch={handleSelectSearch}
-          />
+          /> */}
         </Col>
         <Col sm={8}>
           <FilteredProperties

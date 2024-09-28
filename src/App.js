@@ -11,6 +11,9 @@ import Login from './component/Login';
 import Register from './component/Register';
 import BG from "./assessts/BG.jpg"
 import AuthCheck from './auth/AuthCheck';
+import AddProperty from './component/AddProperty';
+import OwnerProperty from './component/OwnerProperty';
+import ListedProperties from './component/ListedProperties';
 
 function App() {
 
@@ -41,22 +44,25 @@ function App() {
   }, []);
 
   return (
-    <div  className='App'  >
+    <div className='App'  >
 
-    <Container>
-      <HeaderBar />
-      <Routes>
-        <Route path='/' element={<Home />} />
-        <Route path='/login' element={<Login />} />
-        <Route path='/register' element={<Register />} />
-        <Route path='/properties' element={
-          <Product properties={properties} loading={loading} errMsg={error} />
-        } />
-        <Route path='/properties/:id' element={<SingleProperty />} />
-      </Routes>
-      <FooterBar />
-    </Container>
-        </div>
+      <Container>
+        <HeaderBar />
+        <Routes>
+          <Route path='/' element={<Home />} />
+          <Route path='/addproperty' element={<AddProperty />} />
+          <Route path='/login' element={<Login />} />
+          <Route path='/register' element={<Register />} />
+          <Route path='/ownerproperty' element={<OwnerProperty />} />
+          <Route path='/ownproperties' element={<ListedProperties />} />
+          <Route path='/properties' element={
+            <Product properties={properties} loading={loading} errMsg={error} />
+          } />
+          <Route path='/properties/:id' element={<SingleProperty />} />
+        </Routes>
+        <FooterBar />
+      </Container>
+    </div>
   );
 }
 

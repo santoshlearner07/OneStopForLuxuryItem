@@ -38,7 +38,7 @@ function FilteredProperties(props) {
   };
 
   useEffect(() => {
-    // Get user's current location
+    // getting user location
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -58,7 +58,7 @@ function FilteredProperties(props) {
             return { ...property, distance: null };
           });
 
-          // Update the properties with distance data
+          // update the properties details
           setPropertiesWithDistance(updatedProperties);
         },
         (error) => {
@@ -83,7 +83,7 @@ function FilteredProperties(props) {
       Math.cos(lat1Rad) * Math.cos(lat2Rad) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-    return R * c; // Distance in miles
+    return R * c; // distance in miles
   }
 
   return (
@@ -133,7 +133,9 @@ function FilteredProperties(props) {
                       />
                     )}
                     {item.distance !== null ? (
-                      <p>Distance: {item.distance.toFixed(2)} miles away</p>
+                      <p>Distance: 
+                        {item.distance.toFixed(2)}
+                         miles away</p>
                     ) : (
                       <p>Distance data is not available</p>
                     )}
