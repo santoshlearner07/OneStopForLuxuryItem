@@ -271,7 +271,7 @@ function Product(props) {
     <Tooltip id="button-tooltip" {...props}>
       {pastSearch.length > 0 ? (
         <ul>
-          {pastSearch.map((item, index) => <li key={index}>{item}</li>)}
+          {pastSearch.slice(0, 5).map((item, index) => <li key={index}>{item}</li>)}
         </ul>
       ) : (
         <span>No previous searches</span>
@@ -364,7 +364,7 @@ function Product(props) {
                 onChange={(e) => handlePriorityChange(e, 'pricePriority')}
               />
             </Form.Group>
-            <Button type="submit" variant="primary">Save Search</Button>
+            <Button type="submit" variant="primary">Save Search Address</Button>
             <Button variant="outline-primary" onClick={handleSaveAll}>Save All Filters</Button>
           </Form>
           <FetchPreviousSearches

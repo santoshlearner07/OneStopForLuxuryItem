@@ -132,7 +132,7 @@ function FilteredProperties(props) {
                   <ListGroup.Item>
                     {show === item.id && (
                       <iframe
-                        width={'375'}
+                        width={'100%'}
                         height={'300'}
                         style={{ border: 'none' }}
                         src={`https://maps.google.com/maps?q=${item.location.latitude},${item.location.longitude}&z=${zoom}&output=embed`}

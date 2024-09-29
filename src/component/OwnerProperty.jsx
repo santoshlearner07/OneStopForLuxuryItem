@@ -21,7 +21,7 @@ function OwnerProperty() {
         bathroomsPriority: '',
         pricePriority: '',
     });
-    const [filteredProperties, setFilteredProperties] = useState([]);
+    const [filteredProperties, setFilteredProperties] = useState(ownerHouses || []);
     const [pastSearch, setPastSearch] = useState([]);
     const [isFocus, setIsFocus] = useState(false);
     const [showTooltip, setShowTooltip] = useState(false);
@@ -69,55 +69,70 @@ function OwnerProperty() {
     }, []);
 
     const applyFilters = (currentFilters, currentPriorities) => {
+        const hasPriorities = Object.values(currentPriorities).some(priority => Number(priority) === 1);
+
+        // If no priorities are set to 1, display all properties
+        if (!hasPriorities) {
+            setFilteredProperties(ownerHouses);
+            return;
+        }
+
         let filtered = ownerHouses || [];
-    
+
         // Deconstruct the filter and priority values
         const { address, bedrooms, bathrooms, minPrice, maxPrice } = currentFilters;
         const { bedroomsPriority, bathroomsPriority, pricePriority } = currentPriorities;
-    
+
         // Filter by address
         if (address) {
             filtered = filtered.filter(property =>
                 property.displayAddress?.toLowerCase().includes(address.toLowerCase())
             );
         }
-    
-        // Calculate scores for properties
-        filtered = filtered.map((property) => {
-            let score = 0;
-    
-            // Bedroom priority scoring
-            if (bedroomsPriority > 0 && bedrooms) {
-                const bedroomDifference = Math.abs(property.bedrooms - Number(bedrooms));
-                score += bedroomsPriority / (1 + bedroomDifference); // Give a higher score for closer matches
+
+        // Apply filters
+        filtered = filtered.filter(property => {
+            let matches = true; // Flag to check if the property matches all criteria
+
+            // Bedroom filter
+            if (bedroomsPriority === '1' && bedrooms) {
+                matches = matches && property.bedrooms === Number(bedrooms);
             }
-    
-            // Bathroom priority scoring
-            if (bathroomsPriority > 0 && bathrooms) {
-                const bathroomDifference = Math.abs(property.bathrooms - Number(bathrooms));
-                score += bathroomsPriority / (1 + bathroomDifference); // Higher score for closer matches
+
+            // Bathroom filter
+            if (bathroomsPriority === '1' && bathrooms) {
+                matches = matches && property.bathrooms === Number(bathrooms);
             }
-    
-            // Price priority scoring
-            if (pricePriority > 0 && property.price && property.price.amount) {
-                const priceA = property.price.amount;
-                const inRange = priceA >= (Number(minPrice) || 0) && priceA <= (Number(maxPrice) || Infinity);
-                score += inRange ? pricePriority : 0; // Only add price priority if the property is in range
+
+            // Price filter
+            if (pricePriority === '1') {
+                const price = property.price?.amount; // Ensure price exists
+                const min = Number(minPrice) || 0; // Default to 0 if minPrice is invalid
+                const max = Number(maxPrice) || Infinity; // Default to Infinity if maxPrice is invalid
+
+                // Check if the price is within the specified range
+                if (price !== undefined) {
+                    matches = matches && price >= min && price <= max;
+                }
             }
-    
-            return { ...property, score }; // Attach score to each property
+
+            return matches; // Keep properties that match all active filters
         });
-    
-        // Sort properties based on their score
-        filtered.sort((a, b) => b.score - a.score);
-    
+
+        // If no properties match the criteria, display a message
+        if (filtered.length === 0) {
+            console.log("No properties found based on the current filters.");
+        } else {
+            console.log('Filtered Properties:', filtered); // Debugging output
+        }
+
         // Update the filtered properties state
         setFilteredProperties(filtered);
     };
-    
+
+
     const handleInputChange = (e, filterType) => {
         const value = e.target.value;
-
         // Update the filters state
         setFilters(prevFilters => ({
             ...prevFilters,
@@ -215,34 +230,35 @@ function OwnerProperty() {
 
     // handle selecting a past search
     const handleSelectSearch = (item) => {
+        console.log(item); // Log the item to see its structure
         setFilters({
             address: item.address || '',
-            bedrooms: item.bedrooms.join(', ') || '',
-            bathrooms: item.bathrooms.join(', ') || '',
+            bedrooms: Array.isArray(item.bedrooms) ? item.bedrooms.join(', ') : (item.bedrooms || ''),
+            bathrooms: Array.isArray(item.bathrooms) ? item.bathrooms.join(', ') : (item.bathrooms || ''),
             minPrice: item.minPrice || '',
             maxPrice: item.maxPrice || ''
         });
     };
 
-    // const handleIncreaseMaxPrice = () => {
-    //     setFilters(prevFilters => ({
-    //         ...prevFilters,
-    //         maxPrice: prevFilters.maxPrice ? (Number(prevFilters.maxPrice) * 1.1).toFixed(2) : ''
-    //     }));
-    // };
-
+    const handleTooltipEnter = () => {
+        setShowTooltip(true);
+    };
+    
+    const handleTooltipExit = () => {
+        setShowTooltip(false);
+    };
     // render tooltip for past searches
     const renderTooltip = (props) => (
         <Tooltip id="button-tooltip" {...props}>
-            {pastSearch.length > 0 ? (
-                <ul>
-                    {pastSearch.map((item, index) => <li key={index}>{item}</li>)}
-                </ul>
-            ) : (
-                <span>No previous searches</span>
-            )}
+          {pastSearch.length > 0 ? (
+            <ul>
+              {pastSearch.slice(0, 5).map((item, index) => <li key={index}>{item}</li>)}
+            </ul>
+          ) : (
+            <span>No previous searches</span>
+          )}
         </Tooltip>
-    );
+      ); 
 
     return (
         <Row>
@@ -251,17 +267,20 @@ function OwnerProperty() {
                     <Form.Group>
                         <Form.Label>Address</Form.Label>
                         <OverlayTrigger
-                            placement="right"
-                            overlay={renderTooltip}
-                        >
-                            <Form.Control
-                                type="text"
-                                placeholder="Enter address"
-                                value={filters.address}
-                                onChange={(e) => handleInputChange(e, 'address')}
-                                onFocus={handleFocus}
-                            />
-                        </OverlayTrigger>
+                        placement="right"
+                        overlay={renderTooltip}
+                        show={showTooltip}
+                        onEnter={handleTooltipEnter}
+                        onExit={handleTooltipExit}
+                    >
+                        <Form.Control
+                            type="text"
+                            placeholder="Enter address"
+                            value={filters.address}
+                            onChange={(e) => handleInputChange(e, 'address')}
+                            onFocus={() => setShowTooltip(true)} // Show tooltip on focus
+                        />
+                    </OverlayTrigger>
                     </Form.Group>
                     <Form.Group>
                         <Form.Label>Bedrooms</Form.Label>
@@ -326,14 +345,14 @@ function OwnerProperty() {
                         />
                     </Form.Group>
 
-                    <Button type="submit" variant="primary">Save Search</Button>
+                    <Button type="submit" variant="primary">Save Search Address</Button>
                     <Button variant="outline-primary" onClick={handleSaveAll}>Save All Filters</Button>
                     {/* <Button variant="outline-primary" onClick={sortPropertiesByPriority}>Sort Properties</Button> */}
                 </Form>
                 <FetchPreviousSearches
-            pastSearch={pastSearch}
-            onSelectSearch={handleSelectSearch}
-          />
+                    pastSearch={pastSearch}
+                    onSelectSearch={handleSelectSearch}
+                />
             </Col>
             <Col sm={8}>
                 <Row>
@@ -365,9 +384,9 @@ function OwnerProperty() {
                                         </ListGroup>
                                     </Card.Body>
                                     <ListGroup className="list-group-flush">
-                                        <ListGroup.Item onClick={() => viewOnMap(item.id)}>View On Map</ListGroup.Item>
+                                        <ListGroup.Item onClick={() => viewOnMap(item._id)}>View On Map</ListGroup.Item>
                                         <ListGroup.Item>
-                                            {show === item.id && (
+                                            {show === item._id && (
                                                 <iframe
                                                     width={'100%'}
                                                     height={'300'}
