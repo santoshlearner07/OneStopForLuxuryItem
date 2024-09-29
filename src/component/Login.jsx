@@ -1,3 +1,4 @@
+// All required imports
 import axios from 'axios';
 import React, { useState } from 'react'
 import { Button, Col, Container, Form, Row, InputGroup } from 'react-bootstrap'
@@ -11,50 +12,55 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 function Login() {
+  // Functions to show error messages for various login scenarios
   const emailDoesNotMatch = () => toast.error('No user found.')
   const passNotMatch = () => toast.error('Password does not match')
   const emailPassDoesNotMatch = () => toast.error('Email or Password does not match')
 
 
-  const navigate = useNavigate();
-  const [userCheck, setUserCheck] = useState({
+  const navigate = useNavigate(); // useNavigate() for navigating
+  const [userCheck, setUserCheck] = useState({ // State to hold user email and password
     email: "", password: ""
   })
-  const [show, hide] = useState(true);
+  const [show, hide] = useState(true); // State to toggle password visibility
+
+  // Handle input changes for email and password fields
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setUserCheck((prevData) => ({ ...prevData, [name]: value }))
+    setUserCheck((prevData) => ({ ...prevData, [name]: value })) // update the state
   }
 
+  // Handle form submission
   const handleSubmit = (event) => {
-    event.preventDefault();
+    event.preventDefault();  // Prevent the default form submission behavior
     const userData = {
       email: userCheck.email,
       password: userCheck.password,
     }
-    axios.post(`${BaseApi}/login`, userData)
+    axios.post(`${BaseApi}/login`, userData) // post request
       .then((res) => {
-        localStorage.setItem('token', res.data.accessToken)
+        localStorage.setItem('token', res.data.accessToken) // store token and email in localstorage
         localStorage.setItem('email',userCheck.email)
-        navigate("/properties")
+        navigate("/properties") // Navigate to the properties page
       })
       .catch((error) => {
         if (error.response.status == 400) {
-          emailDoesNotMatch();
+          emailDoesNotMatch(); // Show error for no user found
         } else if (error.response.status == 401) {
-          passNotMatch();
+          passNotMatch(); // Show error for password mismatch
         } else {
-          emailPassDoesNotMatch();
+          emailPassDoesNotMatch(); // Show generic error for email/password mismatch
         }
-
       })
+      // Reset user input fields after submission
     setUserCheck({
       email: "", password: ""
     })
   }
 
+  // Toggle the visibility of the password
   const displayPassword = () => {
-    hide(!show)
+    hide(!show) // change the state to show or hide the password
   }
 
   return (

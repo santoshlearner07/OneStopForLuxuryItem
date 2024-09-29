@@ -5,12 +5,15 @@ import { Card } from 'react-bootstrap';
 import BaseApi from '../utils/BaseAPI';
 
 function FetchPreviousSearches({ onSelectSearch }) {
+    // useState to store previous search data
     const [prevInputSearch, setPrevInputSearch] = useState([]);
 
+    // useEffect hook to fetch previous searches when the component is mounted
     useEffect(() => {
         const fetchUserInputs = async () => {
             try {
-                const token = localStorage.getItem('token');
+                // retrieve JWT token from local storage and with the help of jwtDecode take out email
+                const token = localStorage.getItem('token'); 
                 if (token) {
                     const decoded = jwtDecode(token);
                     const decodedEmail = decoded.email;
@@ -27,16 +30,20 @@ function FetchPreviousSearches({ onSelectSearch }) {
             }
         };
 
-        fetchUserInputs();
-    }, []);
+        fetchUserInputs(); // call the function to fetch data when component is mounted
+    }, []); // empty dependency array means the effect runs once on component mount
+
 
     const handleCardClick = (item) => {
-        onSelectSearch(item);
+        onSelectSearch(item); // call the parent function to handle the selected search
     };
 
     return (
         <>
+        {/* display heading if there are previous searches */}
             {prevInputSearch.length > 0 && <h3>Previous Searches</h3>}
+
+            {/* loop through the previous search data and display each search as a card */}
             {prevInputSearch.map((item, index) => {
                 const locationText = item.address ? `Location: ${item.address}` : '';
                 const bathroomText = item.bathrooms ? `Bathroom: ${item.bathrooms}` : '';
@@ -44,12 +51,14 @@ function FetchPreviousSearches({ onSelectSearch }) {
                 const minPriceText = item.minPrice || item.minPrice === 0 ? `Min Price: ${item.minPrice}` : '';
                 const maxPriceText = item.maxPrice || item.maxPrice === 0 ? `Max Price: ${item.maxPrice}` : '';
 
+                //combine all filter text that are not empty
                 const filterText = [locationText, bathroomText, bedroomText, minPriceText, maxPriceText]
                     .filter(text => text)
                     .join(', ');
 
                 return (
-                    <Card key={index} className="mb-3" onClick={() => handleCardClick(item)}>
+                    // display each previous search as a card, allowing it to be clicked to select
+                    <Card key={index} className="mb-3" onClick={() => handleCardClick(item)} style={{cursor:"pointer"}} >
                         <Card.Body>
                             <Card.Text>
                                 {filterText || 'No details available'}

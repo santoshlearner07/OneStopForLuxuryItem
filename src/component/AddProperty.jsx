@@ -8,7 +8,7 @@ import { jwtDecode } from 'jwt-decode';
 
 //google map API library
 const libraries = ['places'];
-
+const API_KEY = 'AIzaSyAyy8CB38wO_EDwAG8bO_WuKrO46JrvKt0'
 function AddProperty() {
   //initial property state
   const [property, setProperty] = useState({
@@ -27,7 +27,7 @@ function AddProperty() {
   const [selectedImages, setSelectedImages] = useState([]);
   const searchBoxRef = useRef(null); // store the Google Maps SearchBox
 
-  //conne
+  //input change for form fields and update property state
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProperty(prevState => ({
@@ -36,6 +36,7 @@ function AddProperty() {
     }));
   };
 
+//checkbox change and update state
   const handleCheckboxChange = (e) => {
     const { name, checked } = e.target;
     setProperty(prevState => ({
@@ -44,20 +45,24 @@ function AddProperty() {
     }));
   };
 
+  //place selection in Google Maps SearchBox
   const handlePlaceChanged = () => {
-    const places = searchBoxRef.current.getPlaces();
+    const places = searchBoxRef.current.getPlaces();// get selected place
     if (places && places.length > 0) {
-      const place = places[0];
+      const place = places[0]; // first place
       setProperty(prevState => ({
         ...prevState,
-        displayAddress: place.formatted_address || place.name,
-        latitude: place.geometry.location.lat(),
-        longitude: place.geometry.location.lng(),
+        displayAddress: place.formatted_address || place.name, // display address
+        latitude: place.geometry.location.lat(),// latitude
+        longitude: place.geometry.location.lng(),// longitude
       }));
     }
   };
+
+  //previewImages before uploading
   const [previewImages, setPreviewImages] = useState([]);
 
+  //file selection "images" for upload and generate preview URLs
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     setSelectedImages(files);
@@ -66,12 +71,16 @@ function AddProperty() {
     setPreviewImages(previewUrls);
   };
 
+  // form submission to add property
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // prevent page reload on form submit
+
+    // get JWT token from local storage and decode user email
     const token = localStorage.getItem('token');
     const decoded = jwtDecode(token);
     const decodedEmail = decoded.email;
   
+    // create a FormData object to submit form data and images
     const formData = new FormData();
     formData.append('bedrooms', property.bedrooms);
     formData.append('bathrooms', property.bathrooms);
@@ -83,17 +92,19 @@ function AddProperty() {
     formData.append('currencyCode', property.currencyCode);
     formData.append('premiumListing', property.premiumListing);
     formData.append('email', decodedEmail);
-  
+  // appending each selected image to FormData
     for (let i = 0; i < selectedImages.length; i++) {
       formData.append('images', selectedImages[i]);
     }
   
     try {
+      // post request to add property
       await axios.post(`${BaseApi}/properties/useraddproperty`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       toast.success('Property added successfully!');
     } catch (error) {
+      // display error and show via toast
       toast.error('Error adding property: ' + (error.response ? error.response.data.message : error.message));
     }
   };  
@@ -101,7 +112,7 @@ function AddProperty() {
   return (
     <Container style={{ backgroundColor: "white" }}>
       <h2>Add New Property</h2>
-      <LoadScript googleMapsApiKey="AIzaSyAyy8CB38wO_EDwAG8bO_WuKrO46JrvKt0" libraries={libraries}>
+      <LoadScript googleMapsApiKey={`${API_KEY}`} libraries={libraries}>
         <Form onSubmit={handleSubmit}>
           <Row>
             <Col sm={6}>

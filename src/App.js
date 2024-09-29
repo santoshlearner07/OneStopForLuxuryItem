@@ -16,18 +16,18 @@ import OwnerProperty from './component/OwnerProperty';
 import ListedProperties from './component/ListedProperties';
 
 function App() {
-
+// State to store fetched property data, loading status, and error messages
   const [properties, setProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true); // Indicates if the data is being fetched
+  const [error, setError] = useState(null); // Stores error message, if any, during fetching
 
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        const response = await fetch('http://localhost:8888/api/properties/get'); //remove fetch
+        const response = await fetch('http://localhost:8888/api/properties/get'); // Fetching property data from the API
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(`HTTP error! status: ${response.status}`); // Throwing error if the response is not OK
         }
 
         const data = await response.json();
@@ -40,14 +40,16 @@ function App() {
       }
     };
 
-    fetchProperties();
-  }, []);
+    fetchProperties(); // calling the function to fetch data
+  }, []);// [] runs only once when the component mounts
 
   return (
     <div className='App'  >
 
       <Container>
-        <HeaderBar />
+        <HeaderBar /> {/* Displaying the header bar */}
+
+        {/* Defining the routes for the app */}
         <Routes>
           <Route path='/' element={<Home />} />
           <Route path='/addproperty' element={<AddProperty />} />
@@ -60,7 +62,7 @@ function App() {
           } />
           <Route path='/properties/:id' element={<SingleProperty />} />
         </Routes>
-        <FooterBar />
+        <FooterBar /> {/* Displaying the footer bar */}
       </Container>
     </div>
   );

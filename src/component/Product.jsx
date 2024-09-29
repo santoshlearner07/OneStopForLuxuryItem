@@ -7,8 +7,10 @@ import FilteredProperties from './FilteredProperties';
 // import FetchPreviousSearches from './FetchPreviousSearches';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import FetchPreviousSearches from './FetchPreviousSearches';
 
 function Product(props) {
+  // All initial states
   const [filters, setFilters] = useState({
     address: '',
     bedrooms: '',
@@ -25,16 +27,18 @@ function Product(props) {
   const [pastSearch, setPastSearch] = useState([]);
   const [isFocus, setIsFocus] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
-
+ // Toast notifications for user feedback
   const userLogin = () => toast.warning("Please login to save your searches");
   const allSearchSaved = () => toast.success("Search Saved");
 
+  // useEffect to apply filters when properties or filters change
   useEffect(() => {
     if (props.properties.length) {
       applyFilters(filters, priorities);
     }
   }, [filters, priorities, props.properties]);
 
+  // useEffect to fetch past searches for the user when the component mounts
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -47,6 +51,7 @@ function Product(props) {
     }
   }, []);
 
+   // function to apply filters to the properties
   const applyFilters = (currentFilters, currentPriorities) => {
     let filtered = props.properties || [];
   
@@ -68,6 +73,7 @@ function Product(props) {
   
     let results = filtered;
   
+    // appply filters based on the user's criteria
     for (const { filter, value, min, max } of sortedFilters) {
       if (filter === 'bedrooms' && value) {
         const bedroomsValue = Number(value);
@@ -92,6 +98,7 @@ function Product(props) {
           const propertyPrice = property.price?.amount || 0;
           let priceMatch = true;
   
+          // check if the property price falls within the specified range
           if (min && max) {
             priceMatch = propertyPrice >= Number(min) && propertyPrice <= Number(max);
           } else if (min) {
@@ -110,6 +117,7 @@ function Product(props) {
       let scoreA = 0;
       let scoreB = 0;
   
+      // scores adding based on the property meeting the user's filter criteria
       if (bedroomsPriority > 0 && a.bedrooms === Number(filters.bedrooms)) {
         scoreA += Number(bedroomsPriority);
       }
@@ -138,10 +146,12 @@ function Product(props) {
       return scoreB - scoreA; // higher score displays first
     });
   
+    // update state with the filtered results
     setFilteredProperties(results);
     console.log("Final filtered and sorted properties:", results);
   };  
 
+  // handle input changes in the filter fields
   const handleInputChange = (e, filterType) => {
     const value = e.target.value;
     setFilters(prevFilters => ({
@@ -150,6 +160,7 @@ function Product(props) {
     }));
   };
 
+  // handle changes in the priority fields
   const handlePriorityChange = (e, priorityType) => {
     const value = e.target.value;
     setPriorities(prevPriorities => ({
@@ -158,6 +169,7 @@ function Product(props) {
     }));
   };
 
+  // handle form submission to save search data
   const handleSearch = (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
@@ -172,6 +184,7 @@ function Product(props) {
         return;
       }
 
+      // data for saving the search
       const savingSearch = {
         email: decodedEmail,
         searchData: filters.address
@@ -190,6 +203,7 @@ function Product(props) {
     }
   };
 
+  // handle save all filter inputs for the user
   const handleSaveAll = () => {
     const token = localStorage.getItem('token');
 
@@ -197,6 +211,7 @@ function Product(props) {
       const decoded = jwtDecode(token);
       const decodedEmail = decoded.email;
 
+      // data for all user input
       const savingData = {
         email: decodedEmail,
         filters: [{
@@ -208,7 +223,7 @@ function Product(props) {
         }]
       };
 
-      axios.post(`${BaseApi}/saveAllUserInputs`, savingData)
+      axios.post(`${BaseApi}/saveAllUserInputs`, savingData) // post request for saving all user input
         .then((res) => {
           console.log('All user inputs saved:', res);
           allSearchSaved();
@@ -225,6 +240,7 @@ function Product(props) {
     }
   };
 
+  // handle focus on the address input for displaying tooltip
   const handleFocus = () => {
     setIsFocus(true);
     setShowTooltip(true);
@@ -232,6 +248,7 @@ function Product(props) {
     setTimeout(() => setShowTooltip(false), 5000);
   };
 
+  // handle selection of prev search item
   const handleSelectSearch = (item) => {
     setFilters({
       address: item.address || '',
@@ -242,6 +259,7 @@ function Product(props) {
     });
   };
 
+  // increase maxPrice by 10%
   const handleIncreaseMaxPrice = () => {
     setFilters(prevFilters => ({
       ...prevFilters,
@@ -265,6 +283,7 @@ function Product(props) {
     <Container fluid>
       <Row>
         <Col sm={4}>
+         {/* User input form for filters and priorities */}
           <Form onSubmit={handleSearch}>
             <Form.Group>
               <Form.Label>Address</Form.Label>
@@ -348,10 +367,10 @@ function Product(props) {
             <Button type="submit" variant="primary">Save Search</Button>
             <Button variant="outline-primary" onClick={handleSaveAll}>Save All Filters</Button>
           </Form>
-          {/* <FetchPreviousSearches
+          <FetchPreviousSearches
             pastSearch={pastSearch}
             onSelectSearch={handleSelectSearch}
-          /> */}
+          />
         </Col>
         <Col sm={8}>
           <FilteredProperties

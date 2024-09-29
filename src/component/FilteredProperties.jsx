@@ -3,34 +3,38 @@ import { Button, Card, Carousel, Col, ListGroup, Row } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
 function FilteredProperties(props) {
-  // console.log(props)
+   // Initialize hooks for navigation and state management
   const navigate = useNavigate();
-  const [show, hide] = useState(null);
+  const [show, hide] = useState(null); // state to control visibility of the map
   const [userLocation, setUserLocation] = useState({ latitude: null, longitude: null });
-  const [propertiesWithDistance, setPropertiesWithDistance] = useState([]);
+  const [propertiesWithDistance, setPropertiesWithDistance] = useState([]); // state to hold properties with calculated distances
   const zoom = 13;
 
+  // Function to toggle the display of the map for a property
   const viewOnMap = (mapId) => {
     hide(show === mapId ? null : mapId);
   };
 
+  // Function to navigate to a single property detail page
   const displaySingleProperty = (property, index) => {
     navigate(`/properties/${property}`);
   };
 
   const [currentPage, setCurrentPage] = useState(1);
-  const propertyPerPage = 6;
+  const propertyPerPage = 6; // Number of properties to display per page
   const totalPage = Math.ceil(propertiesWithDistance.length / propertyPerPage);
   const indexOfLastProperty = currentPage * propertyPerPage;
   const indexOfFirstProperty = indexOfLastProperty - propertyPerPage;
-  const currentProperty = propertiesWithDistance.slice(indexOfFirstProperty, indexOfLastProperty);
+  const currentProperty = propertiesWithDistance.slice(indexOfFirstProperty, indexOfLastProperty); // slice properties for current page
 
+  // function to go to the next page
   const nextProperty = () => {
     if (currentPage < totalPage) {
       setCurrentPage(currentPage + 1);
     }
   };
 
+  // function to go to the previous page
   const prevProperty = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
@@ -42,9 +46,10 @@ function FilteredProperties(props) {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          const { latitude, longitude } = position.coords;
-          setUserLocation({ latitude, longitude });
+          const { latitude, longitude } = position.coords; // users coordinates
+          setUserLocation({ latitude, longitude }); //user location
 
+          // update properties with calculated distances
           const updatedProperties = props.filteredProperties.map((property) => {
             if (property.location && property.location.latitude && property.location.longitude) {
               const distanceInMiles = calculateDistance(
@@ -53,31 +58,33 @@ function FilteredProperties(props) {
                 property.location.latitude,
                 property.location.longitude
               );
-              return { ...property, distance: distanceInMiles };
+              return { ...property, distance: distanceInMiles }; // add distance to the property object, formatted to 2 decimal places
             }
-            return { ...property, distance: null };
+            return { ...property, distance: null }; // Return property with null distance if no coordinates
           });
 
-          // update the properties details
+          // update the properties details with distance
           setPropertiesWithDistance(updatedProperties);
         },
         (error) => {
-          console.error('Error getting location:', error);
+          console.error('Error getting location:', error); // Log any errors in retrieving location
         }
       );
     } else {
-      console.error('Geolocation is not supported by this browser.');
+      console.error('Geolocation is not supported by this browser.'); // Log if geolocation is not supported
     }
   }, [props.filteredProperties]);
 
+  // function to calculate the distance between two geographical points
   function calculateDistance(lat1, lon1, lat2, lon2) {
-    const toRadians = (degrees) => (degrees * Math.PI) / 180;
+    const toRadians = (degrees) => (degrees * Math.PI) / 180; // convert degrees to radians
     const R = 3958.8; // Radius of Earth in miles
     const dLat = toRadians(lat2 - lat1);
     const dLon = toRadians(lon2 - lon1);
     const lat1Rad = toRadians(lat1);
     const lat2Rad = toRadians(lat2);
 
+    // Haversine formula to calculate distance
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos(lat1Rad) * Math.cos(lat2Rad) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
@@ -147,6 +154,7 @@ function FilteredProperties(props) {
           );
         })}
       </Row>
+      {/* {Pagination controls} */}
       <div className="pagination-controls" style={{ marginTop: '20px', textAlign: 'center' }}>
         <Button onClick={prevProperty} disabled={currentPage === 1}>
           Previous

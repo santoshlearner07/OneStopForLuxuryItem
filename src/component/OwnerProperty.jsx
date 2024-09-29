@@ -4,7 +4,9 @@ import BaseApi from '../utils/BaseAPI';
 import { Card, Col, Row, Form, Button, OverlayTrigger, Tooltip, Carousel, ListGroup } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
 import { jwtDecode } from 'jwt-decode';
+import FetchPreviousSearches from './FetchPreviousSearches';
 function OwnerProperty() {
+    // all initial useState for OwnerProperty
     const [ownerHouses, setOwnerHouses] = useState([]);
     const [show, hide] = useState(null);
     const [filters, setFilters] = useState({
@@ -24,30 +26,37 @@ function OwnerProperty() {
     const [isFocus, setIsFocus] = useState(false);
     const [showTooltip, setShowTooltip] = useState(false);
 
+    // Toast notifications for user actions
     const userLogin = () => toast.warning("Please login to save your searches");
     const allSearchSaved = () => toast.success("Search Saved");
-    const zoom = 13;
+    const zoom = 13; // Default zoom level for the map
 
+    // Function to toggle map visibility for a specific property
     const viewOnMap = (mapId) => {
         hide(show === mapId ? null : mapId);
     };
+
+    // Fetch owner's properties on component mount
     useEffect(() => {
         axios.get(`${BaseApi}/properties/usergetproperty`)
             .then((res) => {
-                setOwnerHouses(res.data);
+                setOwnerHouses(res.data); // Set owner houses data in state
             })
             .catch((err) => {
-                console.log(err);
+                console.log(err); // Log any errors
             });
     }, []);
 
+    // Apply filters whenever filters, priorities, or owner's houses change
     useEffect(() => {
         if (ownerHouses.length) {
             applyFilters(filters, priorities);
         }
     }, [filters, priorities, ownerHouses]);
 
+    // Fetch user's past searches based on decoded token
     useEffect(() => {
+        //decodeToken with the help of jwtDecode to take out email
         const token = localStorage.getItem('token');
         if (token) {
             const decoded = jwtDecode(token);
@@ -61,65 +70,51 @@ function OwnerProperty() {
 
     const applyFilters = (currentFilters, currentPriorities) => {
         let filtered = ownerHouses || [];
-
+    
         // Deconstruct the filter and priority values
         const { address, bedrooms, bathrooms, minPrice, maxPrice } = currentFilters;
         const { bedroomsPriority, bathroomsPriority, pricePriority } = currentPriorities;
-
-        // First, filter properties based on the values provided in the filters
+    
+        // Filter by address
         if (address) {
             filtered = filtered.filter(property =>
-                property.displayAddress.toLowerCase().includes(address.toLowerCase())
+                property.displayAddress?.toLowerCase().includes(address.toLowerCase())
             );
         }
-
-        if (bedrooms) {
-            filtered = filtered.filter(property => property.bedrooms === Number(bedrooms));
-        }
-
-        if (bathrooms) {
-            filtered = filtered.filter(property => property.bathrooms === Number(bathrooms));
-        }
-
-        if (minPrice) {
-            filtered = filtered.filter(property => property.price.amount >= Number(minPrice));
-        }
-
-        if (maxPrice) {
-            filtered = filtered.filter(property => property.price.amount <= Number(maxPrice));
-        }
-
-        // Sort properties based on priorities (example sorting by bedrooms, bathrooms, and price)
-        filtered.sort((a, b) => {
-            let scoreA = 0;
-            let scoreB = 0;
-
-            if (bedroomsPriority > 0) {
-                scoreA += a.bedrooms === Number(bedrooms) ? bedroomsPriority : 0;
-                scoreB += b.bedrooms === Number(bedrooms) ? bedroomsPriority : 0;
+    
+        // Calculate scores for properties
+        filtered = filtered.map((property) => {
+            let score = 0;
+    
+            // Bedroom priority scoring
+            if (bedroomsPriority > 0 && bedrooms) {
+                const bedroomDifference = Math.abs(property.bedrooms - Number(bedrooms));
+                score += bedroomsPriority / (1 + bedroomDifference); // Give a higher score for closer matches
             }
-
-            if (bathroomsPriority > 0) {
-                scoreA += a.bathrooms === Number(bathrooms) ? bathroomsPriority : 0;
-                scoreB += b.bathrooms === Number(bathrooms) ? bathroomsPriority : 0;
+    
+            // Bathroom priority scoring
+            if (bathroomsPriority > 0 && bathrooms) {
+                const bathroomDifference = Math.abs(property.bathrooms - Number(bathrooms));
+                score += bathroomsPriority / (1 + bathroomDifference); // Higher score for closer matches
             }
-
-            if (pricePriority > 0) {
-                const priceA = a.price.amount;
-                const priceB = b.price.amount;
-
-                scoreA += (priceA >= minPrice && priceA <= maxPrice) ? pricePriority : 0;
-                scoreB += (priceB >= minPrice && priceB <= maxPrice) ? pricePriority : 0;
+    
+            // Price priority scoring
+            if (pricePriority > 0 && property.price && property.price.amount) {
+                const priceA = property.price.amount;
+                const inRange = priceA >= (Number(minPrice) || 0) && priceA <= (Number(maxPrice) || Infinity);
+                score += inRange ? pricePriority : 0; // Only add price priority if the property is in range
             }
-
-            return scoreB - scoreA; // Higher score means higher priority
+    
+            return { ...property, score }; // Attach score to each property
         });
-
+    
+        // Sort properties based on their score
+        filtered.sort((a, b) => b.score - a.score);
+    
         // Update the filtered properties state
         setFilteredProperties(filtered);
     };
-
-
+    
     const handleInputChange = (e, filterType) => {
         const value = e.target.value;
 
@@ -130,21 +125,22 @@ function OwnerProperty() {
         }));
     };
 
-    // Handle priority input changes
+    // handle priority input changes
     const handlePriorityChange = (e, priorityType) => {
         const value = e.target.value;
 
-        // Update the priorities state
+        // update the priorities state
         setPriorities(prevPriorities => ({
             ...prevPriorities,
             [priorityType]: value
         }));
     };
 
+    // handle search submission 
     const handleSearch = (e) => {
         e.preventDefault();
+        // retrieve token from local storage and with the help of jwtDecode take out email
         const token = localStorage.getItem('token');
-
         if (token) {
             const decoded = jwtDecode(token);
             const decodedEmail = decoded.email;
@@ -163,7 +159,7 @@ function OwnerProperty() {
             axios.post(`${BaseApi}/saveSearch`, savingSearch)
                 .then((res) => {
                     console.log('Search saved:', res);
-                    allSearchSaved();
+                    allSearchSaved();// Notify user of successful save
                 })
                 .catch(err => {
                     console.error('Error saving search:', err);
@@ -173,6 +169,7 @@ function OwnerProperty() {
         }
     };
 
+    // handle saving all filters and priorities
     const handleSaveAll = () => {
         const token = localStorage.getItem('token');
 
@@ -194,7 +191,7 @@ function OwnerProperty() {
             axios.post(`${BaseApi}/saveAllUserInputs`, savingData)
                 .then((res) => {
                     console.log('All user inputs saved:', res);
-                    allSearchSaved();
+                    allSearchSaved(); // Notify user of successful save
                 })
                 .catch(err => {
                     if (err.response.status === 404) {
@@ -208,13 +205,15 @@ function OwnerProperty() {
         }
     };
 
+    // handle focus on input fields
     const handleFocus = () => {
         setIsFocus(true);
         setShowTooltip(true);
 
-        setTimeout(() => setShowTooltip(false), 5000);
+        setTimeout(() => setShowTooltip(false), 5000); // hide tooltip after 5 seconds
     };
 
+    // handle selecting a past search
     const handleSelectSearch = (item) => {
         setFilters({
             address: item.address || '',
@@ -225,13 +224,14 @@ function OwnerProperty() {
         });
     };
 
-    const handleIncreaseMaxPrice = () => {
-        setFilters(prevFilters => ({
-            ...prevFilters,
-            maxPrice: prevFilters.maxPrice ? (Number(prevFilters.maxPrice) * 1.1).toFixed(2) : ''
-        }));
-    };
+    // const handleIncreaseMaxPrice = () => {
+    //     setFilters(prevFilters => ({
+    //         ...prevFilters,
+    //         maxPrice: prevFilters.maxPrice ? (Number(prevFilters.maxPrice) * 1.1).toFixed(2) : ''
+    //     }));
+    // };
 
+    // render tooltip for past searches
     const renderTooltip = (props) => (
         <Tooltip id="button-tooltip" {...props}>
             {pastSearch.length > 0 ? (
@@ -259,6 +259,7 @@ function OwnerProperty() {
                                 placeholder="Enter address"
                                 value={filters.address}
                                 onChange={(e) => handleInputChange(e, 'address')}
+                                onFocus={handleFocus}
                             />
                         </OverlayTrigger>
                     </Form.Group>
@@ -326,8 +327,13 @@ function OwnerProperty() {
                     </Form.Group>
 
                     <Button type="submit" variant="primary">Save Search</Button>
+                    <Button variant="outline-primary" onClick={handleSaveAll}>Save All Filters</Button>
                     {/* <Button variant="outline-primary" onClick={sortPropertiesByPriority}>Sort Properties</Button> */}
                 </Form>
+                <FetchPreviousSearches
+            pastSearch={pastSearch}
+            onSelectSearch={handleSelectSearch}
+          />
             </Col>
             <Col sm={8}>
                 <Row>

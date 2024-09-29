@@ -6,6 +6,7 @@ import Modal from 'react-bootstrap/Modal';
 import "./FooterBar.css"
 function FooterBar() {
 
+  // State variables to manage the visibility of modals (About Us, Services, Privacy Policy, Terms of Service)
   const [aboutUs, setAboutUs] = useState(false);
   const [services, setServices] = useState(false);
   const [privacyPolicy, setPrivacyPolicy] = useState(false);
@@ -27,6 +28,7 @@ function FooterBar() {
             <p>Phone: (123) 456-7890<br />Email: santoshwalker719@gmail.com</p>
           </Col>
           <Col>
+          {/* Each list item opens a corresponding modal*/}
             <h5>Quick Links</h5>
             <ul className="list-unstyled">
               <li onClick={() => setAboutUs(true)} style={{ cursor: "pointer" }} >About Us</li>
@@ -40,7 +42,7 @@ function FooterBar() {
           <Col>
             <h5>Follow Us</h5>
 
-            <RateUs />
+            <RateUs />  {/* Component to allow users to rate the platform */}
             <p>&copy; 2024 One Stop. All rights reserved.</p>
           </Col>
         </Row>

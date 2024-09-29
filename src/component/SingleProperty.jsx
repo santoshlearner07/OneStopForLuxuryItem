@@ -4,11 +4,16 @@ import { Card, Carousel, Col, Container, ListGroup, Row } from 'react-bootstrap'
 import { useParams } from 'react-router-dom'
 import { FaBan } from "react-icons/fa";
 function SingleProperty(props) {
-    const [show, hide] = useState(null)
-    const [errMsg, setErrMsg] = useState(null);
-    const zoom = 13;
-    const [oneProperty, setOneProperty] = useState();
+    // all initial state
+    const [show, hide] = useState(null) // useState hook for handling visibility of the map
+    const [errMsg, setErrMsg] = useState(null); // useState for storing error messages, initialized as null
+    const [oneProperty, setOneProperty] = useState(); // useState for storing property data, initially undefined
+    const zoom = 13; // Zoom level for Google Maps iframe
+    
+        // useParams to get propertyId from the URL
     const propertyId = useParams();
+
+    // useEffect to fetch a single property based on ID
     useEffect(() => {
         const id = parseInt(propertyId.id);
         axios.get(`http://localhost:8888/api/properties/${id}`)
@@ -19,6 +24,7 @@ function SingleProperty(props) {
             })
     }, [])
 
+    // If the property data has not yet been loaded, disply loading or error message
     if (!oneProperty) {
         if (errMsg) {
             return <div>Error: {errMsg.message}</div>;
@@ -26,6 +32,7 @@ function SingleProperty(props) {
         return <div>Loading...</div>;
     }
 
+    // toggle function to show or hide Google Maps iframe
     const viewOnMap = (mapId) => {
         hide(show === mapId ? null : mapId);
     }
@@ -35,6 +42,7 @@ function SingleProperty(props) {
             <Card>
                 <Row>
                     <Col>
+                    {/* Carousel to display property images */}
                         <Carousel>
                             {oneProperty.propertyImages.images.map((image, imgIndex) => (
                                 <Carousel.Item key={imgIndex}>
@@ -49,6 +57,7 @@ function SingleProperty(props) {
                         </Carousel>
                     </Col>
                     <Col>
+                    {/* Displaying property summary and customer details */}
                         Summary :- {oneProperty.summary}<br />
                         <Row>
                             <Col lg={8}>
@@ -84,6 +93,7 @@ function SingleProperty(props) {
                         <ListGroup.Item>TransactionType:- {oneProperty.transactionType === "buy" ? "Buy" : "Sell"}</ListGroup.Item>
                         <ListGroup.Item onClick={() => viewOnMap(oneProperty.id)}>View On Map</ListGroup.Item>
                         <ListGroup.Item>
+                            {/* Display Google Maps iframe if the user clicks on "View On Map" */}
                             {show === oneProperty.id && (
                                 <iframe
                                     width={"375"}
