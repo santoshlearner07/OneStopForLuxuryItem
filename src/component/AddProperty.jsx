@@ -6,25 +6,28 @@ import { Button, Col, Container, Form, Row } from 'react-bootstrap';
 import { LoadScript, StandaloneSearchBox } from '@react-google-maps/api';
 import { jwtDecode } from 'jwt-decode';
 
+//google map API library
 const libraries = ['places'];
 
 function AddProperty() {
+  //initial property state
   const [property, setProperty] = useState({
-    id: "", // string
-    bedrooms: 0, // number
-    bathrooms: 0, // number
-    summary: "", // string
-    displayAddress: "", // string
-    latitude: 0.0, // number
-    longitude: 0.0, // number
-    amount: 0.0, // number
-    currencyCode: "£", // string
-    premiumListing: false // boolean
+    bedrooms: 0,
+    bathrooms: 0,
+    summary: "",
+    displayAddress: "",
+    latitude: 0.0,
+    longitude: 0.0,
+    amount: 0.0,
+    currencyCode: "£",
+    premiumListing: false,
   });
 
+  // selected image to upload
   const [selectedImages, setSelectedImages] = useState([]);
-  const searchBoxRef = useRef(null);
+  const searchBoxRef = useRef(null); // store the Google Maps SearchBox
 
+  //conne
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProperty(prevState => ({
@@ -53,32 +56,47 @@ function AddProperty() {
       }));
     }
   };
+  const [previewImages, setPreviewImages] = useState([]);
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setSelectedImages(files);
+
+    const previewUrls = files.map((file) => URL.createObjectURL(file));
+    setPreviewImages(previewUrls);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
     const decoded = jwtDecode(token);
     const decodedEmail = decoded.email;
-    const propertyData = {
-      // id: property.id,
-      bedrooms: Number(property.bedrooms),
-      bathrooms: Number(property.bathrooms),
-      summary: property.summary,
-      displayAddress: property.displayAddress,
-      latitude: Number(property.latitude),
-      longitude: Number(property.longitude),
-      amount: Number(property.amount),
-      currencyCode: property.currencyCode,
-      premiumListing: property.premiumListing,
-      email:decodedEmail
+  
+    const formData = new FormData();
+    formData.append('bedrooms', property.bedrooms);
+    formData.append('bathrooms', property.bathrooms);
+    formData.append('summary', property.summary);
+    formData.append('displayAddress', property.displayAddress);
+    formData.append('latitude', property.latitude);
+    formData.append('longitude', property.longitude);
+    formData.append('amount', property.amount);
+    formData.append('currencyCode', property.currencyCode);
+    formData.append('premiumListing', property.premiumListing);
+    formData.append('email', decodedEmail);
+  
+    for (let i = 0; i < selectedImages.length; i++) {
+      formData.append('images', selectedImages[i]);
     }
+  
     try {
-      await axios.post(`${BaseApi}/properties/useraddproperty`, propertyData);
+      await axios.post(`${BaseApi}/properties/useraddproperty`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
       toast.success('Property added successfully!');
     } catch (error) {
       toast.error('Error adding property: ' + (error.response ? error.response.data.message : error.message));
     }
-  };
+  };  
 
   return (
     <Container style={{ backgroundColor: "white" }}>
@@ -87,7 +105,7 @@ function AddProperty() {
         <Form onSubmit={handleSubmit}>
           <Row>
             <Col sm={6}>
-            <Form.Group>
+              <Form.Group>
                 <Form.Label>Display Address</Form.Label>
                 <StandaloneSearchBox
                   onLoad={ref => (searchBoxRef.current = ref)}
@@ -103,16 +121,7 @@ function AddProperty() {
                   />
                 </StandaloneSearchBox>
               </Form.Group>
-              {/* <Form.Group>
-                <Form.Label>ID</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="id"
-                  value={property.id}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group> */}
+
               <Form.Group>
                 <Form.Label>Bedrooms</Form.Label>
                 <Form.Control
@@ -123,6 +132,7 @@ function AddProperty() {
                   required
                 />
               </Form.Group>
+
               <Form.Group>
                 <Form.Label>Bathrooms</Form.Label>
                 <Form.Control
@@ -133,6 +143,7 @@ function AddProperty() {
                   required
                 />
               </Form.Group>
+
               <Form.Group>
                 <Form.Label>Summary</Form.Label>
                 <Form.Control
@@ -143,6 +154,7 @@ function AddProperty() {
                 />
               </Form.Group>
             </Col>
+
             <Col sm={6}>
               <Form.Group>
                 <Form.Label>Latitude</Form.Label>
@@ -155,6 +167,7 @@ function AddProperty() {
                   required
                 />
               </Form.Group>
+
               <Form.Group>
                 <Form.Label>Longitude</Form.Label>
                 <Form.Control
@@ -166,6 +179,7 @@ function AddProperty() {
                   required
                 />
               </Form.Group>
+
               <Form.Group>
                 <Form.Label>Price Amount</Form.Label>
                 <Form.Control
@@ -176,6 +190,7 @@ function AddProperty() {
                   required
                 />
               </Form.Group>
+
               <Form.Group>
                 <Form.Label>Currency Code</Form.Label>
                 <Form.Control
@@ -185,6 +200,7 @@ function AddProperty() {
                   onChange={handleChange}
                 />
               </Form.Group>
+
               <Form.Group>
                 <Form.Check
                   type="checkbox"
@@ -194,8 +210,14 @@ function AddProperty() {
                   onChange={handleCheckboxChange}
                 />
               </Form.Group>
+
+              <Form.Group>
+                <Form.Label>Upload Images</Form.Label>
+                <Form.Control type="file" multiple onChange={handleFileChange} />
+              </Form.Group>
             </Col>
           </Row>
+
           <Button type="submit">Add Property</Button>
         </Form>
       </LoadScript>

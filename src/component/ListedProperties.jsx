@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Card, Col, ListGroup, Row } from 'react-bootstrap';
+import { Card, Carousel, Col, ListGroup, Row } from 'react-bootstrap';
 import { jwtDecode } from 'jwt-decode';
 import BaseApi from '../utils/BaseAPI';
 import { IoTrashBinSharp } from "react-icons/io5";
@@ -17,7 +17,6 @@ function ListedProperties() {
     };
 
     useEffect(() => {
-        // Fetch properties by user email
         const token = localStorage.getItem('token');
         if (token) {
             const decoded = jwtDecode(token);
@@ -34,14 +33,12 @@ function ListedProperties() {
     }, []);
 
     useEffect(() => {
-        // Get user location
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const { latitude, longitude } = position.coords;
                     setUserLocation({ latitude, longitude });
 
-                    // Calculate distance for each property and update state
                     const updatedProperties = listedProperties.map((property) => {
                         if (property.latitude && property.longitude) {
                             const distanceInMiles = calculateDistance(
@@ -65,7 +62,6 @@ function ListedProperties() {
         }
     }, [listedProperties]);
 
-    // Function to calculate distance using the Haversine formula
     function calculateDistance(lat1, lon1, lat2, lon2) {
         const toRadians = (degrees) => (degrees * Math.PI) / 180;
         const R = 3958.8; // Radius of Earth in miles
@@ -79,19 +75,20 @@ function ListedProperties() {
             Math.cos(lat1Rad) * Math.cos(lat2Rad) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-        return R * c; // Returns the distance in miles
+        return R * c;
     }
 
     const deletePost = (propertyId) => {
         axios.delete(`${BaseApi}/properties/deletePropertyById/${propertyId}`)
             .then(() => {
-                // Remove the deleted property from the list after successful deletion
                 setPropertiesWithDistance(propertiesWithDistance.filter(property => property._id !== propertyId));
             })
             .catch((err) => {
                 console.error('Error deleting property:', err);
             });
     };
+
+    console.log(propertiesWithDistance)
 
     return (
         <Row xl={2} lg={2} md={1} sm={1} xs={1}>
@@ -107,6 +104,19 @@ function ListedProperties() {
                                     <IoTrashBinSharp />
                                 </Col>
                             </Row>
+                            <Carousel>
+                                {item.images.map((image, imgIndex) => (
+                                    <Carousel.Item key={imgIndex}>
+                                        <img
+                                            className="d-block w-100"
+                                            src={`http://localhost:3000/${image}`}
+                                            alt={`Property ${image}`}
+                                            width={'100%'}
+                                            height={'250px'}
+                                        />
+                                    </Carousel.Item>
+                                ))}
+                            </Carousel>
                             <ListGroup className="list-group-flush">
                                 <ListGroup.Item>
                                     Bathrooms: {item.bathrooms} | Bedrooms: {item.bedrooms}

@@ -82,6 +82,7 @@ function HeaderBar() {
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="me-auto">
             <NavLink to={'/properties'} className={"nav-link"}>Properties</NavLink>
+            <NavLink to={'/ownerproperty'} className={"nav-link"}>Owner Properties</NavLink>
             {/* <Nav.Link href="#pricing">Pricing</Nav.Link> */}
           </Nav>
           <Nav>
