@@ -69,66 +69,57 @@ function OwnerProperty() {
     }, []);
 
     const applyFilters = (currentFilters, currentPriorities) => {
-        const hasPriorities = Object.values(currentPriorities).some(priority => Number(priority) === 1);
-
-        // If no priorities are set to 1, display all properties
-        if (!hasPriorities) {
-            setFilteredProperties(ownerHouses);
-            return;
-        }
-
         let filtered = ownerHouses || [];
-
+    
         // Deconstruct the filter and priority values
         const { address, bedrooms, bathrooms, minPrice, maxPrice } = currentFilters;
         const { bedroomsPriority, bathroomsPriority, pricePriority } = currentPriorities;
-
-        // Filter by address
+    
+        // Always apply the address filter
         if (address) {
             filtered = filtered.filter(property =>
                 property.displayAddress?.toLowerCase().includes(address.toLowerCase())
             );
         }
-
-        // Apply filters
+    
+        // Apply the rest of the filters based on priorities
         filtered = filtered.filter(property => {
-            let matches = true; // Flag to check if the property matches all criteria
-
+            let matches = true;
+    
             // Bedroom filter
             if (bedroomsPriority === '1' && bedrooms) {
                 matches = matches && property.bedrooms === Number(bedrooms);
             }
-
+    
             // Bathroom filter
             if (bathroomsPriority === '1' && bathrooms) {
                 matches = matches && property.bathrooms === Number(bathrooms);
             }
-
+    
             // Price filter
             if (pricePriority === '1') {
                 const price = property.price?.amount; // Ensure price exists
                 const min = Number(minPrice) || 0; // Default to 0 if minPrice is invalid
                 const max = Number(maxPrice) || Infinity; // Default to Infinity if maxPrice is invalid
-
-                // Check if the price is within the specified range
+    
                 if (price !== undefined) {
                     matches = matches && price >= min && price <= max;
                 }
             }
-
-            return matches; // Keep properties that match all active filters
+    
+            return matches;
         });
-
+    
         // If no properties match the criteria, display a message
         if (filtered.length === 0) {
             console.log("No properties found based on the current filters.");
         } else {
             console.log('Filtered Properties:', filtered); // Debugging output
         }
-
+    
         // Update the filtered properties state
         setFilteredProperties(filtered);
-    };
+    };    
 
 
     const handleInputChange = (e, filterType) => {

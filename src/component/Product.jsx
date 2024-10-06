@@ -51,115 +51,111 @@ function Product(props) {
     }
   }, []);
 
-   // function to apply filters to the properties
   const applyFilters = (currentFilters, currentPriorities) => {
     let filtered = props.properties || [];
-  
+
     if (!Array.isArray(filtered)) {
-      console.error('Expected an array for properties, got:', filtered);
-      return;
+        console.error('Expected an array for properties, got:', filtered);
+        return;
     }
-  
-    const { bedrooms, bathrooms, minPrice, maxPrice } = currentFilters;
+
+    const { address, bedrooms, bathrooms, minPrice, maxPrice } = currentFilters;
     const { bedroomsPriority, bathroomsPriority, pricePriority } = currentPriorities;
-  
+
     // Create a list of filter criteria sorted by priority (descending)
     const sortedFilters = [
-      { filter: 'bedrooms', priority: Number(bedroomsPriority), value: bedrooms },
-      { filter: 'bathrooms', priority: Number(bathroomsPriority), value: bathrooms },
-      { filter: 'price', priority: Number(pricePriority), min: minPrice, max: maxPrice }
-    ].filter(item => item.priority > 0) 
-      .sort((a, b) => b.priority - a.priority); 
-  
+        { filter: 'address', priority: 1, value: address }, // Address search gets default priority
+        { filter: 'bedrooms', priority: Number(bedroomsPriority), value: bedrooms },
+        { filter: 'bathrooms', priority: Number(bathroomsPriority), value: bathrooms },
+        { filter: 'price', priority: Number(pricePriority), min: minPrice, max: maxPrice }
+    ].filter(item => item.priority > 0) // Only include filters with a set priority
+      .sort((a, b) => b.priority - a.priority); // Sort by priority descending
+
     let results = filtered;
-  
-    // appply filters based on the user's criteria
+
+    // Apply filters based on the user's criteria
     for (const { filter, value, min, max } of sortedFilters) {
-      if (filter === 'bedrooms' && value) {
-        const bedroomsValue = Number(value);
-        if (results.length > 0) {
-          // Filter properties based on exact match or less than criteria
-          results = results.filter(property => {
-            const propertyBedrooms = property.bedrooms || 0;
-            return propertyBedrooms === bedroomsValue;
-          });
+        if (filter === 'address' && value) {
+            results = results.filter(property =>
+                property.displayAddress?.toLowerCase().includes(value.toLowerCase())
+            );
+            if (results.length === 0) break; // Stop filtering if no match
         }
-        if (results.length === 0) break; // If no exact match, stop further filtering
-      }
-  
-      if (filter === 'bathrooms' && value) {
-        const bathroomsValue = Number(value);
-        results = results.filter(property => property.bathrooms <= bathroomsValue);
-        if (results.length === 0) break; // If no match, stop further filtering
-      }
-  
-      if (filter === 'price') {
-        results = results.filter(property => {
-          const propertyPrice = property.price?.amount || 0;
-          let priceMatch = true;
-  
-          // check if the property price falls within the specified range
-          if (min && max) {
-            priceMatch = propertyPrice >= Number(min) && propertyPrice <= Number(max);
-          } else if (min) {
-            priceMatch = propertyPrice >= Number(min);
-          } else if (max) {
-            priceMatch = propertyPrice <= Number(max);
-          }
-          return priceMatch;
-        });
-        if (results.length === 0) break; // If no match, stop further filtering
-      }
+
+        if (filter === 'bedrooms' && value) {
+            results = results.filter(property => property.bedrooms === Number(value));
+            if (results.length === 0) break; // Stop filtering if no match
+        }
+
+        if (filter === 'bathrooms' && value) {
+            results = results.filter(property => property.bathrooms <= Number(value));
+            if (results.length === 0) break; // Stop filtering if no match
+        }
+
+        if (filter === 'price') {
+            results = results.filter(property => {
+                const propertyPrice = property.price?.amount || 0;
+                let priceMatch = true;
+
+                if (min && max) {
+                    priceMatch = propertyPrice >= Number(min) && propertyPrice <= Number(max);
+                } else if (min) {
+                    priceMatch = propertyPrice >= Number(min);
+                } else if (max) {
+                    priceMatch = propertyPrice <= Number(max);
+                }
+                return priceMatch;
+            });
+            if (results.length === 0) break; // Stop filtering if no match
+        }
     }
-  
+
     // Sorting the results based on the priorities
     results.sort((a, b) => {
-      let scoreA = 0;
-      let scoreB = 0;
-  
-      // scores adding based on the property meeting the user's filter criteria
-      if (bedroomsPriority > 0 && a.bedrooms === Number(filters.bedrooms)) {
-        scoreA += Number(bedroomsPriority);
-      }
-      if (bedroomsPriority > 0 && b.bedrooms === Number(filters.bedrooms)) {
-        scoreB += Number(bedroomsPriority);
-      }
-  
-      if (bathroomsPriority > 0 && a.bathrooms <= Number(filters.bathrooms)) {
-        scoreA += Number(bathroomsPriority);
-      }
-      if (bathroomsPriority > 0 && b.bathrooms <= Number(filters.bathrooms)) {
-        scoreB += Number(bathroomsPriority);
-      }
-  
-      if (pricePriority > 0) {
-        const priceA = a.price?.amount || 0;
-        const priceB = b.price?.amount || 0;
-        if (priceA >= Number(filters.minPrice) && priceA <= Number(filters.maxPrice)) {
-          scoreA += Number(pricePriority);
+        let scoreA = 0;
+        let scoreB = 0;
+
+        if (bedroomsPriority > 0 && a.bedrooms === Number(filters.bedrooms)) {
+            scoreA += Number(bedroomsPriority);
         }
-        if (priceB >= Number(filters.minPrice) && priceB <= Number(filters.maxPrice)) {
-          scoreB += Number(pricePriority);
+        if (bedroomsPriority > 0 && b.bedrooms === Number(filters.bedrooms)) {
+            scoreB += Number(bedroomsPriority);
         }
-      }
-  
-      return scoreB - scoreA; // higher score displays first
+
+        if (bathroomsPriority > 0 && a.bathrooms <= Number(filters.bathrooms)) {
+            scoreA += Number(bathroomsPriority);
+        }
+        if (bathroomsPriority > 0 && b.bathrooms <= Number(filters.bathrooms)) {
+            scoreB += Number(bathroomsPriority);
+        }
+
+        if (pricePriority > 0) {
+            const priceA = a.price?.amount || 0;
+            const priceB = b.price?.amount || 0;
+            if (priceA >= Number(filters.minPrice) && priceA <= Number(filters.maxPrice)) {
+                scoreA += Number(pricePriority);
+            }
+            if (priceB >= Number(filters.minPrice) && priceB <= Number(filters.maxPrice)) {
+                scoreB += Number(pricePriority);
+            }
+        }
+
+        return scoreB - scoreA; // higher score displays first
     });
-  
+
     // update state with the filtered results
     setFilteredProperties(results);
     console.log("Final filtered and sorted properties:", results);
-  };  
+}; 
 
-  // handle input changes in the filter fields
-  const handleInputChange = (e, filterType) => {
-    const value = e.target.value;
-    setFilters(prevFilters => ({
+  // Handle input changes
+const handleInputChange = (e, filterType) => {
+  const value = e.target.value;
+  setFilters(prevFilters => ({
       ...prevFilters,
       [filterType]: value
-    }));
-  };
-
+  }));
+};
   // handle changes in the priority fields
   const handlePriorityChange = (e, priorityType) => {
     const value = e.target.value;
@@ -365,7 +361,7 @@ function Product(props) {
               />
             </Form.Group>
             <Button type="submit" variant="primary">Save Search Address</Button>
-            <Button variant="outline-primary" onClick={handleSaveAll}>Save All Filters</Button>
+            <Button variant="warning" onClick={handleSaveAll}>Save All Filters</Button>
           </Form>
           <FetchPreviousSearches
             pastSearch={pastSearch}
