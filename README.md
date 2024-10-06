@@ -87,16 +87,24 @@ Before running this project locally, ensure you have the following installed:
 - **POST /api/auth/register** - User registration
 - **POST /api/feedback/submit** - Submits user feedback
 
-## Project Structure
+## File Structure
 
 ```
-real-estate-app/
-├── backend/             # Backend API (Node.js, Express)
-├── frontend/            # Frontend Application (React.js)
-├── .env.example         # Example environment file
-├── README.md            # Project documentation
-└── package.json         # Project dependencies
+real-estate-backend/
+│
+├── controllers/        # Controller logic for various resources (properties, users, reviews)
+├── middleWare/         # Custom middleware (e.g., CORS)
+├── models/             # Mongoose schemas for database entities (User, Property, Review, etc.)
+├── routes/             # Route handlers for API endpoints
+├── uploads/            # Directory for storing uploaded property images
+├── config/             # Environment configuration (e.g., database connection)
+├── db/                 # Database connection logic
+├── .env                # Environment variable file
+├── app.js              # Main application setup
+├── server.js           # Entry point for starting the server
+└── README.md           # Project documentation
 ```
+
 
 ## Features Under Development
 
