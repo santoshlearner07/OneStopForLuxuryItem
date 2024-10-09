@@ -69,7 +69,7 @@ function Product(props) {
     const priorityLevels = ['1', '2', '3'];
     let matchedProperties = [];
 
-    // Apply filters based on priorities
+    // Apply filters based on priorities for bedrooms and bathrooms
     for (const priority of priorityLevels) {
         let tempFiltered = [...filtered];
 
@@ -83,16 +83,6 @@ function Product(props) {
             tempFiltered = tempFiltered.filter(property => property.bathrooms === Number(bathrooms));
         }
 
-        // Check price based on current priority
-        if (pricePriority === priority) {
-            tempFiltered = tempFiltered.filter(property => {
-                const price = property.price?.amount;
-                const min = Number(minPrice) || 0;
-                const max = Number(maxPrice) || Infinity;
-                return price !== undefined && price >= min && price <= max;
-            });
-        }
-
         // Apply listing type filter (General or Premium)
         if (currentListingType) {
             tempFiltered = tempFiltered.filter(property =>
@@ -100,12 +90,25 @@ function Product(props) {
             );
         }
 
-        // If there are any matches, set them as the matched properties
+        // If there are any matches based on priority filters, set them as matched properties
         if (tempFiltered.length > 0) {
             matchedProperties = tempFiltered;
             break; // Exit the loop when we find properties for a priority
         }
     }
+
+    // Apply price filter (without priority consideration)
+    const min = Number(minPrice) || 0;
+    const max = Number(maxPrice) || Infinity;
+
+    matchedProperties = matchedProperties.filter(property => {
+        const price = property.price?.amount;
+        const inPriceRange = price !== undefined && price >= min && price <= max;
+        console.log(`Property: ${property.displayAddress}, Price: ${price}, In Price Range: ${inPriceRange}`);
+        return inPriceRange;
+    });
+
+    console.log('After Price Filter:', matchedProperties);
 
     // If no properties were matched, fallback to showing all filtered properties
     setFilteredProperties(matchedProperties.length > 0 ? matchedProperties : filtered);
@@ -319,13 +322,13 @@ const handleInputChange = (e, filterType) => {
               <Button variant="outline-secondary" onClick={handleIncreaseMaxPrice}>
                 Increase Max Price by 10%
               </Button>
-              <Form.Label>Priority</Form.Label>
+              {/* <Form.Label>Priority</Form.Label>
               <Form.Control
                 type="number"
                 placeholder="Priority"
                 value={priorities.pricePriority}
                 onChange={(e) => handlePriorityChange(e, 'pricePriority')}
-              />
+              /> */}
             </Form.Group>
             <Button type="submit" variant="primary">Save Search Address</Button>
             <Button variant="warning" onClick={handleSaveAll}>Save All Filters</Button>

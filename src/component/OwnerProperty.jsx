@@ -72,31 +72,31 @@ function OwnerProperty() {
         let filtered = ownerHouses || [];
         const { address, bedrooms, bathrooms, minPrice, maxPrice } = currentFilters;
         const { bedroomsPriority, bathroomsPriority, pricePriority } = currentPriorities;
-
+    
         // Address filter (if provided)
         if (address) {
             filtered = filtered.filter(property =>
                 property.displayAddress?.toLowerCase().includes(address.toLowerCase())
             );
         }
-
+    
         const priorityLevels = ['1', '2', '3'];
         let matchedProperties = [];
-
+    
         // Apply filters based on priorities
         for (const priority of priorityLevels) {
             let tempFiltered = [...filtered];
-
+    
             // Check bedrooms based on current priority
             if (bedrooms && bedroomsPriority === priority) {
                 tempFiltered = tempFiltered.filter(property => property.bedrooms === Number(bedrooms));
             }
-
+    
             // Check bathrooms based on current priority
             if (bathrooms && bathroomsPriority === priority) {
                 tempFiltered = tempFiltered.filter(property => property.bathrooms === Number(bathrooms));
             }
-
+    
             // Check price based on current priority
             if (pricePriority === priority) {
                 tempFiltered = tempFiltered.filter(property => {
@@ -106,25 +106,35 @@ function OwnerProperty() {
                     return price !== undefined && price >= min && price <= max;
                 });
             }
-
+    
             // Apply listing type filter (General or Premium)
             if (currentListingType) {
                 tempFiltered = tempFiltered.filter(property =>
                     currentListingType === 'premium' ? property.premiumListing : !property.premiumListing
                 );
             }
-
+    
+            // Apply additional price filter if both minPrice and maxPrice are defined
+            if (minPrice || maxPrice) {
+                tempFiltered = tempFiltered.filter(property => {
+                    const price = property.price?.amount;
+                    const min = Number(minPrice) || 0;
+                    const max = Number(maxPrice) || Infinity;
+                    return price !== undefined && price >= min && price <= max;
+                });
+            }
+    
             // If there are any matches, set them as the matched properties
             if (tempFiltered.length > 0) {
                 matchedProperties = tempFiltered;
                 break; // Exit the loop when we find properties for a priority
             }
         }
-
+    
         // If no properties were matched, fallback to showing all filtered properties
         setFilteredProperties(matchedProperties.length > 0 ? matchedProperties : filtered);
     };
-
+    
     const handleInputChange = (e, filterType) => {
         const value = e.target.value;
         setFilters(prevFilters => ({
@@ -386,17 +396,17 @@ function OwnerProperty() {
                                 />
                             </Col>
                         </Row>
-                        <Form.Label>Priority</Form.Label>
+                        {/* <Form.Label>Priority</Form.Label>
                         <Form.Control
                             type="number"
                             placeholder="Priority"
                             value={priorities.pricePriority}
                             onChange={(e) => handlePriorityChange(e, 'pricePriority')}
-                        />
+                        /> */}
                     </Form.Group>
 
                     {/* New Radio buttons for General and Premium listing */}
-                    <Form.Group>
+                    <Form.Group style={{backgroundColor:"lightblue"}} className='mt-3' >
                         <Form.Label>Listing Type</Form.Label>
                         <Form.Check
                             type="radio"
