@@ -4,7 +4,7 @@ function RegisterAdvantage() {
   return (
     <div >
      <h1>
-       Register now to get:- </h1> Here are six potential benefits that customers will gain by registering for your real estate application:
+       Register now to get:- </h1>
 
      <h5 style={{backgroundColor:"lightgray"}} >
        Personalized Property Recommendations

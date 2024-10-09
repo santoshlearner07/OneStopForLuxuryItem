@@ -27,6 +27,7 @@ function Product(props) {
   const [pastSearch, setPastSearch] = useState([]);
   const [isFocus, setIsFocus] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [loading, setLoading] = useState(true);
  // Toast notifications for user feedback
   const userLogin = () => toast.warning("Please login to save your searches");
   const allSearchSaved = () => toast.success("Search Saved");
@@ -34,7 +35,9 @@ function Product(props) {
   // useEffect to apply filters when properties or filters change
   useEffect(() => {
     if (props.properties.length) {
+      setLoading(true);
       applyFilters(filters, priorities);
+      setLoading(false);
     }
   }, [filters, priorities, props.properties]);
 
@@ -51,102 +54,62 @@ function Product(props) {
     }
   }, []);
 
-  const applyFilters = (currentFilters, currentPriorities) => {
+  const applyFilters = (currentFilters, currentPriorities, currentListingType) => {
     let filtered = props.properties || [];
-
-    if (!Array.isArray(filtered)) {
-        console.error('Expected an array for properties, got:', filtered);
-        return;
-    }
-
     const { address, bedrooms, bathrooms, minPrice, maxPrice } = currentFilters;
     const { bedroomsPriority, bathroomsPriority, pricePriority } = currentPriorities;
 
-    // Create a list of filter criteria sorted by priority (descending)
-    const sortedFilters = [
-        { filter: 'address', priority: 1, value: address }, // Address search gets default priority
-        { filter: 'bedrooms', priority: Number(bedroomsPriority), value: bedrooms },
-        { filter: 'bathrooms', priority: Number(bathroomsPriority), value: bathrooms },
-        { filter: 'price', priority: Number(pricePriority), min: minPrice, max: maxPrice }
-    ].filter(item => item.priority > 0) // Only include filters with a set priority
-      .sort((a, b) => b.priority - a.priority); // Sort by priority descending
+    // Address filter (if provided)
+    if (address) {
+        filtered = filtered.filter(property =>
+            property.displayAddress?.toLowerCase().includes(address.toLowerCase())
+        );
+    }
 
-    let results = filtered;
+    const priorityLevels = ['1', '2', '3'];
+    let matchedProperties = [];
 
-    // Apply filters based on the user's criteria
-    for (const { filter, value, min, max } of sortedFilters) {
-        if (filter === 'address' && value) {
-            results = results.filter(property =>
-                property.displayAddress?.toLowerCase().includes(value.toLowerCase())
-            );
-            if (results.length === 0) break; // Stop filtering if no match
+    // Apply filters based on priorities
+    for (const priority of priorityLevels) {
+        let tempFiltered = [...filtered];
+
+        // Check bedrooms based on current priority
+        if (bedrooms && bedroomsPriority === priority) {
+            tempFiltered = tempFiltered.filter(property => property.bedrooms === Number(bedrooms));
         }
 
-        if (filter === 'bedrooms' && value) {
-            results = results.filter(property => property.bedrooms === Number(value));
-            if (results.length === 0) break; // Stop filtering if no match
+        // Check bathrooms based on current priority
+        if (bathrooms && bathroomsPriority === priority) {
+            tempFiltered = tempFiltered.filter(property => property.bathrooms === Number(bathrooms));
         }
 
-        if (filter === 'bathrooms' && value) {
-            results = results.filter(property => property.bathrooms <= Number(value));
-            if (results.length === 0) break; // Stop filtering if no match
-        }
-
-        if (filter === 'price') {
-            results = results.filter(property => {
-                const propertyPrice = property.price?.amount || 0;
-                let priceMatch = true;
-
-                if (min && max) {
-                    priceMatch = propertyPrice >= Number(min) && propertyPrice <= Number(max);
-                } else if (min) {
-                    priceMatch = propertyPrice >= Number(min);
-                } else if (max) {
-                    priceMatch = propertyPrice <= Number(max);
-                }
-                return priceMatch;
+        // Check price based on current priority
+        if (pricePriority === priority) {
+            tempFiltered = tempFiltered.filter(property => {
+                const price = property.price?.amount;
+                const min = Number(minPrice) || 0;
+                const max = Number(maxPrice) || Infinity;
+                return price !== undefined && price >= min && price <= max;
             });
-            if (results.length === 0) break; // Stop filtering if no match
+        }
+
+        // Apply listing type filter (General or Premium)
+        if (currentListingType) {
+            tempFiltered = tempFiltered.filter(property =>
+                currentListingType === 'premium' ? property.premiumListing : !property.premiumListing
+            );
+        }
+
+        // If there are any matches, set them as the matched properties
+        if (tempFiltered.length > 0) {
+            matchedProperties = tempFiltered;
+            break; // Exit the loop when we find properties for a priority
         }
     }
 
-    // Sorting the results based on the priorities
-    results.sort((a, b) => {
-        let scoreA = 0;
-        let scoreB = 0;
-
-        if (bedroomsPriority > 0 && a.bedrooms === Number(filters.bedrooms)) {
-            scoreA += Number(bedroomsPriority);
-        }
-        if (bedroomsPriority > 0 && b.bedrooms === Number(filters.bedrooms)) {
-            scoreB += Number(bedroomsPriority);
-        }
-
-        if (bathroomsPriority > 0 && a.bathrooms <= Number(filters.bathrooms)) {
-            scoreA += Number(bathroomsPriority);
-        }
-        if (bathroomsPriority > 0 && b.bathrooms <= Number(filters.bathrooms)) {
-            scoreB += Number(bathroomsPriority);
-        }
-
-        if (pricePriority > 0) {
-            const priceA = a.price?.amount || 0;
-            const priceB = b.price?.amount || 0;
-            if (priceA >= Number(filters.minPrice) && priceA <= Number(filters.maxPrice)) {
-                scoreA += Number(pricePriority);
-            }
-            if (priceB >= Number(filters.minPrice) && priceB <= Number(filters.maxPrice)) {
-                scoreB += Number(pricePriority);
-            }
-        }
-
-        return scoreB - scoreA; // higher score displays first
-    });
-
-    // update state with the filtered results
-    setFilteredProperties(results);
-    console.log("Final filtered and sorted properties:", results);
-}; 
+    // If no properties were matched, fallback to showing all filtered properties
+    setFilteredProperties(matchedProperties.length > 0 ? matchedProperties : filtered);
+};
 
   // Handle input changes
 const handleInputChange = (e, filterType) => {
@@ -277,6 +240,10 @@ const handleInputChange = (e, filterType) => {
 
   return (
     <Container fluid>
+      {loading?(
+        <p>Loading Properties...</p>
+      ):(
+        
       <Row>
         <Col sm={4}>
          {/* User input form for filters and priorities */}
@@ -375,6 +342,8 @@ const handleInputChange = (e, filterType) => {
           />
         </Col>
       </Row>
+      
+    )}
       <ToastContainer />
     </Container>
   );

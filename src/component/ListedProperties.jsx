@@ -4,6 +4,7 @@ import { Card, Carousel, Col, ListGroup, Row } from 'react-bootstrap';
 import { jwtDecode } from 'jwt-decode';
 import BaseApi from '../utils/BaseAPI';
 import { IoTrashBinSharp } from "react-icons/io5";
+import { NavLink } from 'react-router-dom';
 
 function ListedProperties() {
     // all state to hold initial values
@@ -104,65 +105,72 @@ function ListedProperties() {
 
     return (
         <Row xl={2} lg={2} md={1} sm={1} xs={1}> {/* Responsive grid layout for properties */}
-            {propertiesWithDistance && propertiesWithDistance.map((item, index) => ( // mapping through propertiesWithDistance to display them
-                <Col key={index}>
-                    <Card>
-                        <Card.Body>
-                            <Row>
-                                <Col xl={10} lg={10} md={10} sm={10} xs={10} >
-                                    <Card.Title>Displayed: {item.premiumListing ? "Premium Listing" : "General Listing"} </Card.Title>
-                                </Col>
-                                <Col style={{ color: "red", cursor: "pointer" }} onClick={() => deletePost(item._id)}> {/* Clickable icon to delete property */}
-                                    <IoTrashBinSharp />
-                                </Col>
-                            </Row>
-                            <Carousel>
-                                {item.images.map((image, imgIndex) => (
-                                    <Carousel.Item key={imgIndex}>
-                                        <img
-                                            className="d-block w-100"
-                                            src={`http://localhost:3000/${image}`} //image source = src
-                                            alt={`Property ${image}`}
-                                            width={'100%'}
-                                            height={'250px'}
-                                        />
-                                    </Carousel.Item>
-                                ))}
-                            </Carousel>
-                            <ListGroup className="list-group-flush"> {/* List of property details */}
+            {propertiesWithDistance.length > 0 ? (
+                propertiesWithDistance && propertiesWithDistance.map((item, index) => ( // mapping through propertiesWithDistance to display them
+                    <Col key={index}>
+                        <Card>
+                            <Card.Body>
+                                <Row>
+                                    <Col xl={10} lg={10} md={10} sm={10} xs={10} >
+                                        <Card.Title>Displayed: {item.premiumListing ? "Premium Listing" : "General Listing"} </Card.Title>
+                                    </Col>
+                                    <Col style={{ color: "red", cursor: "pointer" }} onClick={() => deletePost(item._id)}> {/* Clickable icon to delete property */}
+                                        <IoTrashBinSharp />
+                                    </Col>
+                                </Row>
+                                <Carousel>
+                                    {item.images.map((image, imgIndex) => (
+                                        <Carousel.Item key={imgIndex}>
+                                            <img
+                                                className="d-block w-100"
+                                                src={`data:${image.contentType};base64,${image.base64}`}
+                                                alt={`data:${image.contentType};base64,${image.base64}`}
+                                                width={'100%'}
+                                                height={'250px'}
+                                            />
+                                        </Carousel.Item>
+                                    ))}
+                                </Carousel>
+                                <ListGroup className="list-group-flush"> {/* List of property details */}
+                                    <ListGroup.Item>
+                                        Bathrooms: {item.bathrooms} | Bedrooms: {item.bedrooms}
+                                    </ListGroup.Item>
+                                    {item.residential === true ? 'Residential Use' : 'Commercial Use'} <br />
+                                    {item.students === true ? 'Students Use' : 'Not for Students'} <br />
+                                    <ListGroup.Item>Address: {item.displayAddress}</ListGroup.Item>
+                                    <ListGroup.Item>Price: £{item.amount}</ListGroup.Item>
+                                    <ListGroup.Item>Brief: {item.summary},<br /><b>Contact:-</b>Email:- {item.email} or Phone Number:- {item.phoneNumber || "Not Available"}</ListGroup.Item>
+                                </ListGroup>
+                            </Card.Body>
+                            <ListGroup className="list-group-flush">
+                                <ListGroup.Item onClick={() => viewOnMap(item.id)}>View On Map</ListGroup.Item> {/* Link to view property on map via function*/}
                                 <ListGroup.Item>
-                                    Bathrooms: {item.bathrooms} | Bedrooms: {item.bedrooms}
+                                    {show === item.id && (
+                                        <iframe
+                                            width="375"
+                                            height="300"
+                                            style={{ border: 'none' }}
+                                            src={`https://maps.google.com/maps?q=${item.latitude},${item.longitude}&z=${zoom}&output=embed`} // Google Maps iframe
+                                            title="google map"
+                                        />
+                                    )}
+                                    {item.distance !== null ? ( // Display distance if available
+                                        <p>Distance: {item.distance} miles</p>
+                                    ) : (
+                                        <p>Distance not available</p> // Message if distance is not available
+                                    )}
                                 </ListGroup.Item>
-                                {item.residential === true ? 'Residential Use' : 'Commercial Use'} <br />
-                                {item.students === true ? 'Students Use' : 'Not for Students'} <br />
-                                <ListGroup.Item>Address: {item.displayAddress}</ListGroup.Item>
-                                <ListGroup.Item>Price: £{item.amount}</ListGroup.Item>
-                                <ListGroup.Item>Brief: {item.summary}</ListGroup.Item>
                             </ListGroup>
-                        </Card.Body>
-                        <ListGroup className="list-group-flush">
-                            <ListGroup.Item onClick={() => viewOnMap(item.id)}>View On Map</ListGroup.Item> {/* Link to view property on map via function*/}
-                            <ListGroup.Item>
-                                {show === item.id && (
-                                    <iframe
-                                        width="375"
-                                        height="300"
-                                        style={{ border: 'none' }}
-                                        src={`https://maps.google.com/maps?q=${item.latitude},${item.longitude}&z=${zoom}&output=embed`} // Google Maps iframe
-                                        title="google map"
-                                    />
-                                )}
-                                {item.distance !== null ? ( // Display distance if available
-                                    <p>Distance: {item.distance} miles</p>
-                                ) : (
-                                    <p>Distance not available</p> // Message if distance is not available
-                                )}
-                            </ListGroup.Item>
-                        </ListGroup>
-                    </Card>
-                    <br />
-                </Col>
-            ))}
+                        </Card>
+                        <br />
+                    </Col>
+                ))
+            ) : (
+                <div>No properties to display,<NavLink to={'/addproperty'} className={'nav-link'} >
+                    Click to add Property
+                </NavLink>
+                </div>
+            )}
         </Row>
     );
 }

@@ -16,8 +16,8 @@ function FilteredProperties(props) {
   };
 
   // Function to navigate to a single property detail page
-  const displaySingleProperty = (property, index) => {
-    navigate(`/properties/${property}`);
+  const displaySingleProperty = (propertyId) => {
+    window.open(`/properties/${propertyId}`, '_blank');
   };
 
   const [currentPage, setCurrentPage] = useState(1);

@@ -25,13 +25,16 @@ function Register() {
     password: '',
   });
   const [isFormValid, setIsFormValid] = useState(false);
-  const [show, hide] = useState(true); // toggle pasword visibility
+  const [show, setShow] = useState(true); // toggle pasword visibility
   
   // user input and validate password
   const userRegister = (event) => {
     const { name, value } = event.target;
-    setUserDetails((prevData) => ({ ...prevData, [name]: value }))
-    validatePassword(value)
+    setUserDetails((prevData) => ({ ...prevData, [name]: value }));
+  
+    if (name === 'pass') {
+      validatePassword(value); // Validate password if the 'pass' field is updated
+    }
   }
 
  //useEffect to check if all form fields are filled
@@ -46,11 +49,11 @@ function Register() {
       setErrors({ password: 'Password must be at least 8 characters, include a letter, a number, and a special character.' });
       setIsFormValid(false);
     } else {
+      // Clear the error if the password is valid
       setErrors({ password: '' });
       setIsFormValid(true);
     }
   }
-
   // Generate a random unique user ID
   const randomUniqueNumber = () => {
     return Math.floor(Math.random() * 100000) + 1;
@@ -58,7 +61,16 @@ function Register() {
 
   // Toggle password visibility
   const displayPassword = () => {
-    hide(!show)
+    setShow(!show); // Toggle the 'show' state
+  }
+
+  const validatePasswordMatch = () => {
+    if (userDetail.pass !== userDetail.confPass) {
+      passNotMatch(); // Trigger notification or handle validation for password mismatch
+      setIsFormValid(false);
+    } else {
+      setIsFormValid(true);
+    }
   }
 
   // handle user registration logic
@@ -76,7 +88,7 @@ function Register() {
       gender: userDetail.gender,
       date: userDetail.dateOfBirth
     }
-
+    // validatePasswordMatch();
      // password validation before sending data
     if (!userDetail.pass) {
       // alert("Password cannot be empty")
@@ -159,10 +171,10 @@ function Register() {
               <Form.Control placeholder="Enter your address" name='address' value={userDetail.address} onChange={userRegister} />
             </Form.Group>
             <Row className="mb-3">
+              <Col sm={5} style={{backgroundColor:"lightblue"}} >
               <Form.Label as="legend" column sm={2}>
                 Gender
               </Form.Label>
-              <Col sm={5}>
                 <Form.Check
                   type="radio"
                   label="Male"

@@ -20,47 +20,44 @@ function AddProperty() {
     longitude: 0.0,
     amount: 0.0,
     currencyCode: "£",
-    premiumListing: false,
-  });
+    premiumListing: false,phoneNumber: "",
+    
+  })
 
   // selected image to upload
   const [selectedImages, setSelectedImages] = useState([]);
-  const searchBoxRef = useRef(null); // store the Google Maps SearchBox
+  const [previewImages, setPreviewImages] = useState([]);
+  const searchBoxRef = useRef(null);// store the Google Maps SearchBox
 
   //input change for form fields and update property state
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setProperty(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
+    setProperty(prevState => ({ ...prevState, [name]: value }));
   };
 
-//checkbox change and update state
+
+  //checkbox change and update state
   const handleCheckboxChange = (e) => {
     const { name, checked } = e.target;
-    setProperty(prevState => ({
-      ...prevState,
-      [name]: checked
-    }));
+    setProperty(prevState => ({ ...prevState, [name]: checked }));
   };
 
   //place selection in Google Maps SearchBox
+
   const handlePlaceChanged = () => {
-    const places = searchBoxRef.current.getPlaces();// get selected place
+    const places = searchBoxRef.current.getPlaces();
     if (places && places.length > 0) {
-      const place = places[0]; // first place
+      const place = places[0];
       setProperty(prevState => ({
         ...prevState,
-        displayAddress: place.formatted_address || place.name, // display address
-        latitude: place.geometry.location.lat(),// latitude
-        longitude: place.geometry.location.lng(),// longitude
+        displayAddress: place.formatted_address || place.name,
+        latitude: place.geometry.location.lat(),
+        longitude: place.geometry.location.lng(),
       }));
     }
   };
 
   //previewImages before uploading
-  const [previewImages, setPreviewImages] = useState([]);
 
   //file selection "images" for upload and generate preview URLs
   const handleFileChange = (e) => {
@@ -73,14 +70,12 @@ function AddProperty() {
 
   // form submission to add property
   const handleSubmit = async (e) => {
-    e.preventDefault(); // prevent page reload on form submit
+    e.preventDefault();
 
-    // get JWT token from local storage and decode user email
     const token = localStorage.getItem('token');
     const decoded = jwtDecode(token);
     const decodedEmail = decoded.email;
-  
-    // create a FormData object to submit form data and images
+
     const formData = new FormData();
     formData.append('bedrooms', property.bedrooms);
     formData.append('bathrooms', property.bathrooms);
@@ -92,22 +87,21 @@ function AddProperty() {
     formData.append('currencyCode', property.currencyCode);
     formData.append('premiumListing', property.premiumListing);
     formData.append('email', decodedEmail);
-  // appending each selected image to FormData
+    formData.append('phoneNumber', property.phoneNumber); 
+
     for (let i = 0; i < selectedImages.length; i++) {
       formData.append('images', selectedImages[i]);
     }
-  
+
     try {
-      // post request to add property
       await axios.post(`${BaseApi}/properties/useraddproperty`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       toast.success('Property added successfully!');
     } catch (error) {
-      // display error and show via toast
       toast.error('Error adding property: ' + (error.response ? error.response.data.message : error.message));
     }
-  };  
+  };
 
   return (
     <Container style={{ backgroundColor: "white" }}>
@@ -164,6 +158,17 @@ function AddProperty() {
                   onChange={handleChange}
                 />
               </Form.Group>
+              <Form.Group>
+                <Form.Label>Phone Number</Form.Label> {/* Phone Number field */}
+                <Form.Control
+                  type="text"
+                  name="phoneNumber"
+                  value={property.phoneNumber}
+                  onChange={handleChange}
+                  placeholder="Enter phone number"
+                  required
+                />
+              </Form.Group>
             </Col>
 
             <Col sm={6}>
@@ -201,6 +206,7 @@ function AddProperty() {
                   required
                 />
               </Form.Group>
+              
 
               <Form.Group>
                 <Form.Label>Currency Code</Form.Label>
@@ -225,8 +231,12 @@ function AddProperty() {
               <Form.Group>
                 <Form.Label>Upload Images</Form.Label>
                 <Form.Control type="file" multiple onChange={handleFileChange} />
+                {previewImages.map((imgSrc, index) => (
+                  <img key={index} src={imgSrc} alt="preview" style={{ width: "100px", height: "100px", margin: "10px" }} />
+                ))}
               </Form.Group>
             </Col>
+            
           </Row>
 
           <Button type="submit">Add Property</Button>
